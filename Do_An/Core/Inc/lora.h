@@ -172,13 +172,6 @@
 /********************* End define registers of modele Lora *******************/
 
 /**************************** Private functions ******************************/
-/* Init Stm32 functions */
-void SystemClock_Config(void);
-void MX_GPIO_Init(void);
-void MX_ADC1_Init(void);
-void MX_SPI1_Init(void);
-void MX_USART1_UART_Init(void);
-
 /* Init Lora functions */
 void vUart1Transmit(uint8_t* pcString);
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData);

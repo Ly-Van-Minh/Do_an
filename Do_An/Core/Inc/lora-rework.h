@@ -1,6 +1,9 @@
 #ifndef __LORA_REWORK_H
 #define __LORA_REWORK_H
 
+#include "lora.h"
+#include "main.h"
+
 #define LORA_WORKING_FREQUENCY (433E6)
 
 HAL_StatusTypeDef LoRaInit(long freq);

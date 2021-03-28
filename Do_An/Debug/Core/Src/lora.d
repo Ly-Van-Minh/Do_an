@@ -24,7 +24,8 @@ Core/Src/lora.o: ../Core/Src/lora.c ../Core/Inc/lora.h ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
+ ../Core/Inc/stm_log.h ../Core/Inc/main.h
 
 ../Core/Inc/lora.h:
 
@@ -81,3 +82,7 @@ Core/Src/lora.o: ../Core/Src/lora.c ../Core/Inc/lora.h ../Core/Inc/main.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+
+../Core/Inc/stm_log.h:
+
+../Core/Inc/main.h:
