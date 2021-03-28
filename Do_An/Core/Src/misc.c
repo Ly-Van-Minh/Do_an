@@ -83,11 +83,16 @@ const char *resetCauseGetName(reset_cause_t reset_cause)
 
 void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis)
 {
+    uint32_t configTime = millis;
+    if (configTime > PRESCALER_256_UPPER_LIMIT)
+    {
+        configTime = PRESCALER_256_UPPER_LIMIT;
+    }
     /* Select INDEPENDENT_WATCHDOG */
     hiwdg->Instance = IWDG;
     /* Use prescaler LSI/128 */
-    hiwdg->Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg->Init.Reload = millis;
+    hiwdg->Init.Prescaler = IWDG_PRESCALER_128;
+    hiwdg->Init.Reload = (int)(IWDG_RESOLUTION * ((float)configTime / PRESCALER_128_UPPER_LIMIT));
     if (HAL_IWDG_Init(hiwdg) != HAL_OK)
     {
         _Error_Handler(__FILE__, __LINE__);

@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_it.h"
-#include "stm_log.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm_log.h"
@@ -44,7 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-const char *FILE_TAG = "STM32F1xx_IT_C";
+const char *ISR_TAG = "STM32F1xx_IT_C";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,9 +57,9 @@ const char *FILE_TAG = "STM32F1xx_IT_C";
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE BEGIN EV */
-
+uint16_t adcValue = 0;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -92,7 +91,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    STM_LOGE(FILE_TAG, "");
+    STM_LOGE(ISR_TAG, "");
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -202,7 +201,30 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
 
-/* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles ADC1 and ADC2 global interrupts.
+  */
+void ADC1_2_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_2_IRQn 0 */
 
+  /* USER CODE END ADC1_2_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC1_2_IRQn 1 */
+
+  /* USER CODE END ADC1_2_IRQn 1 */
+}
+
+/* USER CODE BEGIN 1 */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+  if (hadc->Instance == hadc1.Instance)
+  {
+    adcValue = HAL_ADC_GetValue(hadc);
+  }
+  /* NOTE : This function should not be modified. When the callback is needed,
+            function HAL_ADC_ConvCpltCallback must be implemented in the user file.
+   */
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

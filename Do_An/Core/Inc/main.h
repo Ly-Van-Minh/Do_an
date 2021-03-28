@@ -59,6 +59,8 @@ extern "C"
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LIGHT_SENSOR_OUTPUT_Pin GPIO_PIN_0
+#define LIGHT_SENSOR_OUTPUT_GPIO_Port GPIOA
 #define RELAY_OUTPUT_Pin GPIO_PIN_1
 #define RELAY_OUTPUT_GPIO_Port GPIOA
 #define BUTTON_INPUT_Pin GPIO_PIN_2
@@ -70,6 +72,9 @@ extern "C"
 #define LED_OUTPUT_Pin GPIO_PIN_0
 #define LED_OUTPUT_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+#define LIGHT_THRESHOLD (1000u)
+#define IS_LIGHT_ON(adcValue) ((adcValue < LIGHT_THRESHOLD) ? true : false)
+#define WHICH_LIGHT(adcValue) ((adcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")   
 /* Toggle pin */
 #define TOGGLE_LED_OUTPUT() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
 

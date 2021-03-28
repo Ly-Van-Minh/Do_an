@@ -20,7 +20,6 @@ typedef enum reset_cause
 #define PRESCALER_256_UPPER_LIMIT (26214u)
 #define IWDG_RESOLUTION (4095u)
 
-
 reset_cause_t resetCauseGet(void);
 const char *resetCauseGetName(reset_cause_t reset_cause);
 void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis);

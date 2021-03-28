@@ -41,7 +41,7 @@ typedef enum {
 
 void stm_log_write(stm_log_level_t level, const char *tag, const char *format, ...);
 
-#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter " " #letter " (%d) %s - %s[%d]: " format LOG_RESET_COLOR "\r\n"
+#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter " " #letter " (%d)[%s] - %s[%d]: " format LOG_RESET_COLOR "\r\n"
 
 #define STM_LOGE( tag, format, ... )  if (LOG_LOCAL_LEVEL >= STM_LOG_ERROR)   { stm_log_write(STM_LOG_ERROR,   tag, LOG_FORMAT(E, format), HAL_GetTick(), tag, __func__, __LINE__, ##__VA_ARGS__); }
 
