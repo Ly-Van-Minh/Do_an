@@ -19,14 +19,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "lora.h"
-#include "stm_log.h"
-#include "retarget.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "retarget.h"
+#include "stm_log.h"
+#include "misc.h"
+#include "lora.h"
 /* USER CODE END Includes */
-
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -43,11 +43,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+
+IWDG_HandleTypeDef hiwdg;
+
 SPI_HandleTypeDef hspi1;
+
 UART_HandleTypeDef huart1;
 
-const char *MAIN_TAG = "MAIN_C_TAG";
 /* USER CODE BEGIN PV */
+const char *MAIN_TAG = "MAIN_C_TAG";
 uint8_t ucData = 0;
 uint32_t relayBlinkDelay = 0;
 uint32_t ledBlinkDelay = 0;
@@ -69,6 +73,7 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE END 0 */
 
 /**
+  * @brief  The application entry point.
   * @retval int
   */
 int main(void)
@@ -97,41 +102,40 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
-  RetargetInit(&huart1);
+
   /* USER CODE BEGIN 2 */
+  iwdgInit(&hiwdg, 3000);
+  RetargetInit(&huart1);
+
   relayBlinkDelay = ledBlinkDelay = HAL_GetTick();
+
+  STM_LOGD(MAIN_TAG, "ResetCause: %s", resetCauseGetName(resetCauseGet()));
+  STM_LOGI(MAIN_TAG, "Start Application");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
     if (HAL_GetTick() - ledBlinkDelay >= 500)
     {
+      TOGGLE_LED_OUTPUT();
       ledBlinkDelay = HAL_GetTick();
-      HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin);
-      STM_LOGI(MAIN_TAG, "led blinks");
     }
 
-    if (HAL_GetTick() - relayBlinkDelay >= 5000)
-    {
-      relayBlinkDelay = HAL_GetTick();
-      HAL_GPIO_TogglePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin);
-      STM_LOGI(MAIN_TAG, "relay toggles");
-    }
+    /* reset IWDG */
+    HAL_IWDG_Refresh(&hiwdg);
+    /* USER CODE END WHILE */
 
-    //vSpi1Write(RegFifo, ucData);
-    ucData = ucSpi1Read(RegFrfMsb);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -139,20 +143,21 @@ void SystemClock_Config(void)
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
- * in the RCC_OscInitTypeDef structure.
- */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   /** Initializes the CPU, AHB and APB buses clocks
- */
+  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
@@ -161,21 +166,21 @@ void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /**
- * @brief ADC1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_ADC1_Init(void)
 {
 
@@ -189,7 +194,7 @@ static void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 1 */
   /** Common config
- */
+  */
   hadc1.Instance = ADC1;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
@@ -199,27 +204,55 @@ static void MX_ADC1_Init(void)
   hadc1.Init.NbrOfConversion = 1;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   /** Configure Regular Channel
- */
+  */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
 }
 
+// /**
+//   * @brief IWDG Initialization Function
+//   * @param None
+//   * @retval None
+//   */
+// static void MX_IWDG_Init(void)
+// {
+
+//   /* USER CODE BEGIN IWDG_Init 0 */
+
+//   /* USER CODE END IWDG_Init 0 */
+
+//   /* USER CODE BEGIN IWDG_Init 1 */
+
+//   /* USER CODE END IWDG_Init 1 */
+//   hiwdg.Instance = IWDG;
+//   hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+//   hiwdg.Init.Reload = 4095;
+//   if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+//   {
+//     _Error_Handler(__FILE__, __LINE__);
+//   }
+//   /* USER CODE BEGIN IWDG_Init 2 */
+
+//   /* USER CODE END IWDG_Init 2 */
+
+// }
+
 /**
- * @brief SPI1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_SPI1_Init(void)
 {
 
@@ -245,7 +278,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   /* USER CODE BEGIN SPI1_Init 2 */
 
@@ -253,10 +286,10 @@ static void MX_SPI1_Init(void)
 }
 
 /**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -277,7 +310,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
   /* USER CODE BEGIN USART1_Init 2 */
 
@@ -285,10 +318,10 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -335,7 +368,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void _Error_Handler(char *file, int line)
+{
+  __disable_irq();
 
+  while (1)
+  {
+    STM_LOGE(MAIN_TAG, "Error file %s line %d", file, line);
+  }
+}
 /* USER CODE END 4 */
 
 /**
@@ -349,6 +390,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    STM_LOGE(MAIN_TAG, "");
   }
   /* USER CODE END Error_Handler_Debug */
 }
