@@ -21,7 +21,6 @@
 #include "main.h"
 #include "lora.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,16 +41,15 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-//ADC_HandleTypeDef hadc1;
-//
-//SPI_HandleTypeDef hspi1;
-//
-//UART_HandleTypeDef huart1;
+ADC_HandleTypeDef hadc1;
+SPI_HandleTypeDef hspi1;
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint8_t* pcString = "Alo Minh day!\r\n";
 uint8_t ucData = 0;
 
+uint32_t relayBlinKDelay = 0;
+uint32_t ledBlinkDelay = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,52 +68,62 @@ uint8_t ucData = 0;
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
-    /* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
+  /* USER CODE END 1 */
 
-    /* USER CODE END 1 */
+  /* MCU Configuration--------------------------------------------------------*/
 
-    /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
+  /* USER CODE BEGIN Init */
 
-    /* USER CODE BEGIN Init */
+  /* USER CODE END Init */
 
-    /* USER CODE END Init */
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /* Configure the system clock */
-    SystemClock_Config();
+  /* USER CODE BEGIN SysInit */
 
-    /* USER CODE BEGIN SysInit */
+  /* USER CODE END SysInit */
 
-    /* USER CODE END SysInit */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_ADC1_Init();
+  MX_SPI1_Init();
+  MX_USART1_UART_Init();
+  /* USER CODE BEGIN 2 */
+  relayBlinKDelay = ledBlinkDelay = HAL_GetTick();
+  /* USER CODE END 2 */
 
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-    MX_ADC1_Init();
-    MX_SPI1_Init();
-    MX_USART1_UART_Init();
-    /* USER CODE BEGIN 2 */
-
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    while (1)
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+    if (HAL_GetTick() - ledBlinkDelay >= 500)
     {
-        /* USER CODE END WHILE */
-        //vSpi1Write(RegFifo, ucData);
-        ucData = ucSpi1Read(RegFrfMsb);
-        vUart1Transmit(pcString);
-        vUart1Transmit((uint8_t*)&ucData);
-        /* USER CODE BEGIN 3 */
+      ledBlinkDelay = HAL_GetTick();
+      HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin);
     }
-    /* USER CODE END 3 */
+
+    // if (HAL_GetTick() - relayBlinkDelay >= 500)
+    // {
+    //   relayBlinkDelay = HAL_GetTick();
+    //   HAL_GPIO_TogglePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin);
+    // }
+
+    //vSpi1Write(RegFifo, ucData);
+    ucData = ucSpi1Read(RegFrfMsb);
+    vUart1Transmit(pcString);
+    vUart1Transmit((uint8_t *)&ucData);
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
 }
 
 ///**
@@ -339,16 +347,16 @@ int main(void)
   */
 void Error_Handler(void)
 {
-    /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state */
-    __disable_irq();
-    while (1)
-    {
-    }
-    /* USER CODE END Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -358,10 +366,10 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    /* USER CODE BEGIN 6 */
-    /* User can add his own implementation to report the file name and line number,
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
         ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

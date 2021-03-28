@@ -21,18 +21,27 @@ UART_HandleTypeDef huart1;
   * @retval None
   */
 
-void vUart1Transmit(uint8_t* pcString)
+void vUart1Transmit(uint8_t *pcString)
 {
-    HAL_UART_Transmit(&huart1, (uint8_t*)pcString, strlen(pcString), 200);
+    HAL_UART_Transmit(&huart1, (uint8_t *)pcString, strlen(pcString), 200);
 }
 
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
 {
     ucAddress |= 0x80; /* A wnr bit, which is 1 for write access and 0 for read access */
+    HAL_StatusTypeDef ret = HAL_ERROR;
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_RESET);
     HAL_Delay(10);
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
+    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
+    if (ret != HAL_OK)
+    {
+        vUart1Transmit("error: send reg failed\r\n");
+    }
+    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
+    if (ret != HAL_OK)
+    {
+        vUart1Transmit("error: send data failed\r\n");
+    }
     HAL_Delay(10);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
 }
@@ -45,11 +54,20 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
 uint8_t ucSpi1Read(uint8_t ucAddress)
 {
     uint8_t ucData = 0;
+    HAL_StatusTypeDef ret = HAL_ERROR;
     ucAddress &= 0x7F; /* A wnr bit, which is 1 for write access and 0 for read access */
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_RESET);
     HAL_Delay(10);
-    HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
-    HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
+    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
+    if (ret != HAL_OK)
+    {
+        vUart1Transmit("error: send address failed\r\n");
+    }
+    ret = HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
+    if (ret != HAL_OK)
+    {
+        vUart1Transmit("error: receive data failed\r\n");
+    }
     HAL_Delay(10);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
     return ucData;
@@ -77,7 +95,7 @@ void vLongRangeModeInit(uint8_t ucLongRangeMode)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegOpMode);
     ucData &= 0x7F;
-    if(ucLongRangeMode == 0u || ucLongRangeMode == 1u)
+    if (ucLongRangeMode == 0u || ucLongRangeMode == 1u)
     {
         ucData |= (ucLongRangeMode << 7);
         vSpi1Write(RegOpMode, ucData);
@@ -89,7 +107,7 @@ void vAccessSharedRegInit(uint8_t ucAccessSharedReg)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegOpMode);
     ucData &= 0xBF;
-    if(ucAccessSharedReg == 0u || ucAccessSharedReg == 1u)
+    if (ucAccessSharedReg == 0u || ucAccessSharedReg == 1u)
     {
         ucData |= (ucAccessSharedReg << 6);
         vSpi1Write(RegOpMode, ucData);
@@ -100,7 +118,7 @@ void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn)
 {
     uint8_t ucData = 0;
     ucData &= 0xF7;
-    if(ucLowFrequencyModeOn == 0u || ucLowFrequencyModeOn == 1u)
+    if (ucLowFrequencyModeOn == 0u || ucLowFrequencyModeOn == 1u)
     {
         ucData |= (ucLowFrequencyModeOn << 3);
         vSpi1Write(RegOpMode, ucData);
@@ -117,7 +135,7 @@ void vModeInit(uint8_t ucMode)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegOpMode);
     ucData &= 0xF8;
-    if(ucMode >= 0 && ucMode <= 7)
+    if (ucMode >= 0 && ucMode <= 7)
     {
         ucData |= ucMode;
         vSpi1Write(RegOpMode, ucData);
@@ -140,7 +158,7 @@ void vPaSelectInit(uint8_t ucPaSelect)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPaConfig);
     ucData &= 0x7F;
-    if(ucPaSelect == 0u || ucPaSelect == 1u)
+    if (ucPaSelect == 0u || ucPaSelect == 1u)
     {
         ucData |= (ucPaSelect << 7);
         vSpi1Write(RegPaConfig, ucData);
@@ -152,11 +170,11 @@ void vMaxPowerInit(uint8_t ucMaxPower)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPaConfig);
     ucData &= 0x8F;
-    if(ucMaxPower >= 0u && ucMaxPower <= 7u)
+    if (ucMaxPower >= 0u && ucMaxPower <= 7u)
     {
         ucData |= (ucMaxPower << 4);
         vSpi1Write(RegPaConfig, ucData);
-    }    
+    }
 }
 
 void vOutputPowerInit(uint8_t ucOutputPower)
@@ -164,11 +182,11 @@ void vOutputPowerInit(uint8_t ucOutputPower)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPaConfig);
     ucData &= 0xF0;
-    if(ucOutputPower >= 0u && ucOutputPower <= 15u)
+    if (ucOutputPower >= 0u && ucOutputPower <= 15u)
     {
         ucData |= ucOutputPower;
         vSpi1Write(RegPaConfig, ucData);
-    }     
+    }
 }
 
 void vPaRampInit(uint8_t ucPaRamp)
@@ -176,11 +194,11 @@ void vPaRampInit(uint8_t ucPaRamp)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPaConfig);
     ucData &= 0xF0;
-    if(ucPaRamp >= 0u && ucPaRamp <= 15u)
+    if (ucPaRamp >= 0u && ucPaRamp <= 15u)
     {
         ucData |= ucPaRamp;
         vSpi1Write(RegPaRamp, ucData);
-    }    
+    }
 }
 
 void vOcpOnInit(uint8_t ucOcpOn)
@@ -188,11 +206,11 @@ void vOcpOnInit(uint8_t ucOcpOn)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegOcp);
     ucData &= 0xDF;
-    if(ucOcpOn == 0u || ucOcpOn == 1u)
+    if (ucOcpOn == 0u || ucOcpOn == 1u)
     {
         ucData |= (ucOcpOn << 5);
         vSpi1Write(RegOcp, ucData);
-    }    
+    }
 }
 
 /**
@@ -205,7 +223,7 @@ void vOcpTrim(uint8_t ucOcpTrim)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegOcp);
     ucData &= 0xE0;
-    if(ucOcpTrim == 0u || ucOcpTrim == 32u)
+    if (ucOcpTrim == 0u || ucOcpTrim == 32u)
     {
         ucData |= ucOcpTrim;
         vSpi1Write(RegOcp, ucData);
@@ -213,15 +231,15 @@ void vOcpTrim(uint8_t ucOcpTrim)
 }
 
 void vLnaGainInit(uint8_t ucLnaGain)
-{   
+{
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegLna);
     ucData &= 0x1F;
-    if(ucLnaGain >= 1u && ucLnaGain <= 6u)
+    if (ucLnaGain >= 1u && ucLnaGain <= 6u)
     {
         ucData |= (ucLnaGain << 5);
         vSpi1Write(RegLna, ucData);
-    }   
+    }
 }
 
 void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
@@ -229,11 +247,11 @@ void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegLna);
     ucData &= 0xE7;
-    if(ucLnaBoostLf == 0u)
+    if (ucLnaBoostLf == 0u)
     {
         ucData |= (ucLnaBoostLf << 3);
         vSpi1Write(RegLna, ucData);
-    }    
+    }
 }
 
 void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
@@ -241,11 +259,11 @@ void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegLna);
     ucData &= 0xFC;
-    if(ucLnaBoostHf == 0u || ucLnaBoostHf == 3u)
+    if (ucLnaBoostHf == 0u || ucLnaBoostHf == 3u)
     {
         ucData |= ucLnaBoostHf;
         vSpi1Write(RegLna, ucData);
-    }  
+    }
 }
 
 uint8_t ucFifoAddrPtrRead(void)
@@ -262,7 +280,7 @@ void vFifoAddrPtrWrite(uint8_t ucFifoAddrPtr)
 
 void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr)
 {
-    vSpi1Write(RegFifoTxBaseAddr, ucFifoTxBaseAddr);     
+    vSpi1Write(RegFifoTxBaseAddr, ucFifoTxBaseAddr);
 }
 
 void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr)
@@ -275,7 +293,6 @@ uint8_t ucFifoRxCurrentAddrRead(void)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegFifoRxCurrentAddr);
     return ucData;
-
 }
 
 // void vRxTimeoutMaskInit(uint8_t ucRxTimeoutMask)
@@ -299,7 +316,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucRxDoneMask << 6);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }    
+//     }
 // }
 
 // void vPayloadCrcErrorMaskInit(uint8_t ucPayloadCrcErrorMask)
@@ -311,7 +328,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucPayloadCrcErrorMask << 5);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }      
+//     }
 // }
 
 // void vValidHeaderMaskInit(uint8_t ucValidHeaderMask)
@@ -323,7 +340,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucValidHeaderMask << 4);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }      
+//     }
 // }
 
 // void vTxDoneMaskInit(uint8_t ucTxDoneMask)
@@ -335,7 +352,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucTxDoneMask << 3);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }     
+//     }
 // }
 
 // void vCadDoneMaskInit(uint8_t ucCadDoneMask)
@@ -347,7 +364,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucCadDoneMask << 2);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }    
+//     }
 // }
 
 // void vFhssChangeChannelMaskInit(uint8_t ucFhssChangeChannelMask)
@@ -359,7 +376,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= (ucFhssChangeChannelMask << 1);
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }     
+//     }
 // }
 
 // void vCadDetectedMaskInit(uint8_t ucCadDetectedMask)
@@ -371,7 +388,7 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     {
 //         ucData |= ucCadDetectedMask;
 //         vSpi1Write(RegIrqFlagsMask, ucData);
-//     }   
+//     }
 // }
 
 void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask)
@@ -394,14 +411,14 @@ void vIrqFlagsClear(uint8_t ucIrqFlags)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegIrqFlags);
     ucData |= ucIrqFlags;
-    vSpi1Write(RegIrqFlags, ucData);    
+    vSpi1Write(RegIrqFlags, ucData);
 }
 
 uint8_t ucFifoRxBytesNbRead(void)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegRxNbBytes);
-    return ucData;    
+    return ucData;
 }
 
 uint16_t usValidHeaderCntRead(void)
@@ -409,7 +426,7 @@ uint16_t usValidHeaderCntRead(void)
     uint16_t ucData = 0;
     ucData = ((uint16_t)ucSpi1Read(RegRxHeaderCntValueMsb) << 8);
     ucData |= (uint16_t)ucSpi1Read(RegRxHeaderCntValueLsb);
-    return ucData;    
+    return ucData;
 }
 
 uint16_t usValidPacketCntRead(void)
@@ -417,7 +434,7 @@ uint16_t usValidPacketCntRead(void)
     uint16_t ucData = 0;
     ucData = ((uint16_t)ucSpi1Read(RegRxPacketCntValueMsb) << 8);
     ucData |= (uint16_t)ucSpi1Read(RegRxPacketCntValueLsb);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucRxCodingRateRead(void)
@@ -431,49 +448,49 @@ uint8_t ucModemStatusRead(void)
 {
     uint8_t ucData;
     ucData = 0x1F & ucSpi1Read(RegModemStat);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucPacketSnrRead(void)
 {
     uint8_t ucData;
     ucData = ucSpi1Read(RegPktSnrValue);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucPacketRssiRead(void)
 {
     uint8_t ucData;
     ucData = ucSpi1Read(RegPktRssiValue);
-    return ucData;   
+    return ucData;
 }
 
 uint8_t ucRssiRead(void)
 {
     uint8_t ucData;
     ucData = ucSpi1Read(RegRssiValue);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucPllTimeoutRead(void)
 {
     uint8_t ucData;
     ucData = (ucSpi1Read(RegHopChannel) >> 7);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucCrcOnPayloadread(void)
 {
     uint8_t ucData;
     ucData = 0x01 & (ucSpi1Read(RegHopChannel) >> 6);
-    return ucData;    
+    return ucData;
 }
 
 uint8_t ucFhssPresentChannelRead(void)
 {
     uint8_t ucData;
     ucData = 0x3F & ucSpi1Read(RegHopChannel);
-    return ucData; 
+    return ucData;
 }
 
 void vBandWidthInit(uint8_t ucBandWidth)
@@ -481,7 +498,7 @@ void vBandWidthInit(uint8_t ucBandWidth)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig1);
     ucData &= 0x0F;
-    if(ucBandWidth >= 0u && ucBandWidth <= 9u)
+    if (ucBandWidth >= 0u && ucBandWidth <= 9u)
     {
         ucData |= (ucBandWidth << 4);
         vSpi1Write(RegModemConfig1, ucData);
@@ -493,7 +510,7 @@ void vCodingRateInit(uint8_t ucCodingRate)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig1);
     ucData &= 0xF1;
-    if(ucCodingRate >= 0u && ucCodingRate <= 4u)
+    if (ucCodingRate >= 0u && ucCodingRate <= 4u)
     {
         ucData |= (ucCodingRate << 1);
         vSpi1Write(RegModemConfig1, ucData);
@@ -505,7 +522,7 @@ void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig1);
     ucData &= 0xFE;
-    if(ucHeaderMode == 0u || ucHeaderMode == 1u)
+    if (ucHeaderMode == 0u || ucHeaderMode == 1u)
     {
         ucData |= ucHeaderMode;
         vSpi1Write(RegModemConfig1, ucData);
@@ -517,12 +534,11 @@ void vSpreadingFactor(uint8_t ucSpreadingFactor)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig2);
     ucData &= 0x0F;
-    if(ucSpreadingFactor >= 6u && ucSpreadingFactor <= 12u)
+    if (ucSpreadingFactor >= 6u && ucSpreadingFactor <= 12u)
     {
         ucData |= (ucSpreadingFactor << 4);
         vSpi1Write(RegModemConfig2, ucData);
     }
-
 }
 
 void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
@@ -530,7 +546,7 @@ void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig2);
     ucData &= 0xF7;
-    if(ucTxContinuousMode == 0u || ucTxContinuousMode == 1u)
+    if (ucTxContinuousMode == 0u || ucTxContinuousMode == 1u)
     {
         ucData |= (ucTxContinuousMode << 3);
         vSpi1Write(RegModemConfig2, ucData);
@@ -542,7 +558,7 @@ void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig2);
     ucData &= 0xFB;
-    if(ucRxPayloadCrcOn == 0u || ucRxPayloadCrcOn == 1u)
+    if (ucRxPayloadCrcOn == 0u || ucRxPayloadCrcOn == 1u)
     {
         ucData |= (ucRxPayloadCrcOn << 2);
         vSpi1Write(RegModemConfig2, ucData);
@@ -572,7 +588,7 @@ void vPayloadLengthInit(uint8_t ucPayloadLength)
 
 void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength)
 {
-    vSpi1Write(RegMaxPayloadLength, ucPayloadMaxLength);    
+    vSpi1Write(RegMaxPayloadLength, ucPayloadMaxLength);
 }
 
 void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod)
@@ -592,7 +608,7 @@ void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig3);
     ucData &= 0xF7;
-    if(ucLowDataRateOptimize == 0u || ucLowDataRateOptimize == 1u)
+    if (ucLowDataRateOptimize == 0u || ucLowDataRateOptimize == 1u)
     {
         ucData |= (ucLowDataRateOptimize << 3);
         vSpi1Write(RegModemConfig3, ucData);
@@ -604,19 +620,19 @@ void vAgcAutoOnInit(uint8_t ucAgcAutoOn)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegModemConfig3);
     ucData &= 0xF7;
-    if(ucAgcAutoOn == 0u || ucAgcAutoOn == 1u)
+    if (ucAgcAutoOn == 0u || ucAgcAutoOn == 1u)
     {
         ucData |= (ucAgcAutoOn << 2);
         vSpi1Write(RegModemConfig3, ucData);
-    }    
+    }
 }
 
 unsigned int uiFreqError(void)
 {
     unsigned int uiData = 0;
-    uiData |= (((unsigned int)(ucSpi1Read(RegFeiMsb) & 0x0F) << 16) | \
-              ((unsigned int)ucSpi1Read(RegFeiMid) << 8) | \
-              (unsigned int)ucSpi1Read(RegFeiLsb));
+    uiData |= (((unsigned int)(ucSpi1Read(RegFeiMsb) & 0x0F) << 16) |
+               ((unsigned int)ucSpi1Read(RegFeiMid) << 8) |
+               (unsigned int)ucSpi1Read(RegFeiLsb));
     return uiData;
 }
 
@@ -632,7 +648,7 @@ void vDetectionOptimizeInit(uint8_t ucDetectionOptimize)
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDetectOptimize);
     ucData &= 0xF8;
-    if(ucDetectionOptimize == 3u || ucDetectionOptimize == 5u)
+    if (ucDetectionOptimize == 3u || ucDetectionOptimize == 5u)
     {
         ucData |= ucDetectionOptimize;
         vSpi1Write(RegDetectOptimize, ucData);
@@ -643,7 +659,7 @@ void vInvertIQInit(uint8_t ucInvertIQ)
 {
     uint8_t ucData = 0;
     ucData &= 0xBF;
-    if(ucInvertIQ == 0u || ucInvertIQ == 1u)
+    if (ucInvertIQ == 0u || ucInvertIQ == 1u)
     {
         ucData |= (ucInvertIQ << 6);
         vSpi1Write(RegInvertIQ, ucData);
@@ -652,7 +668,7 @@ void vInvertIQInit(uint8_t ucInvertIQ)
 
 void vDetectionThresholdInit(uint8_t ucDetectionThreshold)
 {
-    if(ucDetectionThreshold == 0x0A || ucDetectionThreshold == 0x0C)
+    if (ucDetectionThreshold == 0x0A || ucDetectionThreshold == 0x0C)
     {
         vSpi1Write(RegDetectionThreshold, ucDetectionThreshold);
     }
@@ -667,11 +683,11 @@ void vDio0MappingInit(uint8_t ucDio0Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0x3F; 
-    if(ucDio0Mapping >= 0u && ucDio0Mapping <= 3u)
+    ucData &= 0x3F;
+    if (ucDio0Mapping >= 0u && ucDio0Mapping <= 3u)
     {
-       ucData |= (ucDio0Mapping << 6);
-       vSpi1Write(RegDioMapping1, ucData);
+        ucData |= (ucDio0Mapping << 6);
+        vSpi1Write(RegDioMapping1, ucData);
     }
 }
 
@@ -679,11 +695,11 @@ void vDio1MappingInit(uint8_t ucDio1Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xCF; 
-    if(ucDio1Mapping >= 0u && ucDio1Mapping <= 3u)
+    ucData &= 0xCF;
+    if (ucDio1Mapping >= 0u && ucDio1Mapping <= 3u)
     {
-       ucData |= (ucDio1Mapping << 4);
-       vSpi1Write(RegDioMapping1, ucData);
+        ucData |= (ucDio1Mapping << 4);
+        vSpi1Write(RegDioMapping1, ucData);
     }
 }
 
@@ -691,11 +707,11 @@ void vDio2MappingInit(uint8_t ucDio2Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xF3; 
-    if(ucDio2Mapping >= 0u && ucDio2Mapping <= 3u)
+    ucData &= 0xF3;
+    if (ucDio2Mapping >= 0u && ucDio2Mapping <= 3u)
     {
-       ucData |= (ucDio2Mapping << 2);
-       vSpi1Write(RegDioMapping1, ucData);
+        ucData |= (ucDio2Mapping << 2);
+        vSpi1Write(RegDioMapping1, ucData);
     }
 }
 
@@ -703,11 +719,11 @@ void vDio3MappingInit(uint8_t ucDio3Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xFC; 
-    if(ucDio3Mapping >= 0u && ucDio3Mapping <= 3u)
+    ucData &= 0xFC;
+    if (ucDio3Mapping >= 0u && ucDio3Mapping <= 3u)
     {
-       ucData |= ucDio3Mapping;
-       vSpi1Write(RegDioMapping1, ucData);
+        ucData |= ucDio3Mapping;
+        vSpi1Write(RegDioMapping1, ucData);
     }
 }
 
@@ -715,11 +731,11 @@ void vDio4MappingInit(uint8_t ucDio4Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0x3F; 
-    if(ucDio4Mapping >= 0u && ucDio4Mapping <= 3u)
+    ucData &= 0x3F;
+    if (ucDio4Mapping >= 0u && ucDio4Mapping <= 3u)
     {
-       ucData |= (ucDio4Mapping << 6);
-       vSpi1Write(RegDioMapping2, ucData);
+        ucData |= (ucDio4Mapping << 6);
+        vSpi1Write(RegDioMapping2, ucData);
     }
 }
 
@@ -727,11 +743,11 @@ void vDio5MappingInit(uint8_t ucDio5Mapping)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0xCF; 
-    if(ucDio5Mapping >= 0u && ucDio5Mapping <= 3u)
+    ucData &= 0xCF;
+    if (ucDio5Mapping >= 0u && ucDio5Mapping <= 3u)
     {
-       ucData |= (ucDio5Mapping << 4);
-       vSpi1Write(RegDioMapping2, ucData);
+        ucData |= (ucDio5Mapping << 4);
+        vSpi1Write(RegDioMapping2, ucData);
     }
 }
 
@@ -739,30 +755,30 @@ void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0xFE; 
-    if(ucMapPreambleDetect == 0u || ucMapPreambleDetect == 1u)
+    ucData &= 0xFE;
+    if (ucMapPreambleDetect == 0u || ucMapPreambleDetect == 1u)
     {
-       ucData |= ucMapPreambleDetect;
-       vSpi1Write(RegDioMapping2, ucData);
-    }   
+        ucData |= ucMapPreambleDetect;
+        vSpi1Write(RegDioMapping2, ucData);
+    }
 }
 
 uint8_t ucVersionRead(void)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegVersion);
-    return ucData;   
+    return ucData;
 }
 
 void vTcxoInputOnInit(uint8_t ucTcxoInputOn)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegTcxo);
-    ucData &= 0xEF; 
-    if(ucTcxoInputOn == 0u || ucTcxoInputOn == 1u)
+    ucData &= 0xEF;
+    if (ucTcxoInputOn == 0u || ucTcxoInputOn == 1u)
     {
-       ucData |= (ucTcxoInputOn << 4);
-       vSpi1Write(RegTcxo, ucData);
+        ucData |= (ucTcxoInputOn << 4);
+        vSpi1Write(RegTcxo, ucData);
     }
 }
 
@@ -770,11 +786,11 @@ void vPaDacInit(uint8_t ucPaDac)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPaDac);
-    ucData &= 0xF8; 
-    if(ucPaDac >= 0u && ucPaDac <= 3u)
+    ucData &= 0xF8;
+    if (ucPaDac >= 0u && ucPaDac <= 3u)
     {
-       ucData |= ucPaDac;
-       vSpi1Write(RegPaDac, ucData);
+        ucData |= ucPaDac;
+        vSpi1Write(RegPaDac, ucData);
     }
 }
 
@@ -787,11 +803,11 @@ void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcRef);
-    ucData &= 0xC0; 
-    if(ucAgcReferenceLevel >= 0x00 && ucAgcReferenceLevel <= 0x3F)
+    ucData &= 0xC0;
+    if (ucAgcReferenceLevel >= 0x00 && ucAgcReferenceLevel <= 0x3F)
     {
-       ucData |= ucAgcReferenceLevel;
-       vSpi1Write(RegAgcRef, ucData);
+        ucData |= ucAgcReferenceLevel;
+        vSpi1Write(RegAgcRef, ucData);
     }
 }
 
@@ -799,72 +815,72 @@ void vAgcStep1Init(uint8_t ucAgcStep1)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcThresh1);
-    ucData &= 0xE0; 
-    if(ucAgcStep1 >= 0x00 && ucAgcStep1 <= 0x1F)
+    ucData &= 0xE0;
+    if (ucAgcStep1 >= 0x00 && ucAgcStep1 <= 0x1F)
     {
-       ucData |= ucAgcStep1;
-       vSpi1Write(RegAgcThresh1, ucData);
-    }    
+        ucData |= ucAgcStep1;
+        vSpi1Write(RegAgcThresh1, ucData);
+    }
 }
 
 void vAgcStep2Init(uint8_t ucAgcStep2)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcThresh2);
-    ucData &= 0x0F; 
-    if(ucAgcStep2 >= 0x00 && ucAgcStep2 <= 0x0F)
+    ucData &= 0x0F;
+    if (ucAgcStep2 >= 0x00 && ucAgcStep2 <= 0x0F)
     {
-       ucData |= (ucAgcStep2 << 4);
-       vSpi1Write(RegAgcThresh2, ucData);
-    }    
+        ucData |= (ucAgcStep2 << 4);
+        vSpi1Write(RegAgcThresh2, ucData);
+    }
 }
 
 void vAgcStep3Init(uint8_t ucAgcStep3)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcThresh2);
-    ucData &= 0xF0; 
-    if(ucAgcStep3 >= 0x00 && ucAgcStep3 <= 0x0F)
+    ucData &= 0xF0;
+    if (ucAgcStep3 >= 0x00 && ucAgcStep3 <= 0x0F)
     {
-       ucData |= ucAgcStep3;
-       vSpi1Write(RegAgcThresh2, ucData);
-    }     
+        ucData |= ucAgcStep3;
+        vSpi1Write(RegAgcThresh2, ucData);
+    }
 }
 
 void vAgcStep4Init(uint8_t ucAgcStep4)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcThresh3);
-    ucData &= 0x0F; 
-    if(ucAgcStep4 >= 0x00 && ucAgcStep4 <= 0x0F)
+    ucData &= 0x0F;
+    if (ucAgcStep4 >= 0x00 && ucAgcStep4 <= 0x0F)
     {
-       ucData |= (ucAgcStep4 << 4);
-       vSpi1Write(RegAgcThresh3, ucData);
-    }    
+        ucData |= (ucAgcStep4 << 4);
+        vSpi1Write(RegAgcThresh3, ucData);
+    }
 }
 
 void vAgcStep5Init(uint8_t ucAgcStep5)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegAgcThresh3);
-    ucData &= 0xF0; 
-    if(ucAgcStep5 >= 0x00 && ucAgcStep5 <= 0x0F)
+    ucData &= 0xF0;
+    if (ucAgcStep5 >= 0x00 && ucAgcStep5 <= 0x0F)
     {
-       ucData |= ucAgcStep5;
-       vSpi1Write(RegAgcThresh3, ucData);
-    }    
+        ucData |= ucAgcStep5;
+        vSpi1Write(RegAgcThresh3, ucData);
+    }
 }
 
 void vRegPllInit(uint8_t ucRegPll)
 {
     uint8_t ucData = 0;
     ucData = ucSpi1Read(RegPll);
-    ucData &= 0x3F; 
-    if(ucRegPll >= 0u && ucRegPll <= 3u)
+    ucData &= 0x3F;
+    if (ucRegPll >= 0u && ucRegPll <= 3u)
     {
-       ucData |= (ucRegPll << 6);
-       vSpi1Write(RegPll, ucData);
-    }      
+        ucData |= (ucRegPll << 6);
+        vSpi1Write(RegPll, ucData);
+    }
 }
 
 /**
@@ -892,8 +908,7 @@ void SystemClock_Config(void)
     }
     /** Initializes the CPU, AHB and APB buses clocks
      */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -953,7 +968,6 @@ void MX_ADC1_Init(void)
     /* USER CODE BEGIN ADC1_Init 2 */
 
     /* USER CODE END ADC1_Init 2 */
-
 }
 
 /**
@@ -991,7 +1005,6 @@ void MX_SPI1_Init(void)
     /* USER CODE BEGIN SPI1_Init 2 */
 
     /* USER CODE END SPI1_Init 2 */
-
 }
 
 /**
@@ -1024,7 +1037,6 @@ void MX_USART1_UART_Init(void)
     /* USER CODE BEGIN USART1_Init 2 */
 
     /* USER CODE END USART1_Init 2 */
-
 }
 
 /**
@@ -1051,7 +1063,7 @@ void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pins : RELAY_OUTPUT_Pin SPI1_NSS_Pin */
-    GPIO_InitStruct.Pin = RELAY_OUTPUT_Pin|SPI1_NSS_Pin;
+    GPIO_InitStruct.Pin = RELAY_OUTPUT_Pin | SPI1_NSS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1076,5 +1088,3 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LED_OUTPUT_GPIO_Port, &GPIO_InitStruct);
 }
-
-
