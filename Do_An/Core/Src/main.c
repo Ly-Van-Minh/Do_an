@@ -114,12 +114,12 @@ int main(void)
       STM_LOGI(MAIN_TAG, "led blinks");
     }
 
-    if (HAL_GetTick() - relayBlinkDelay >= 5000)
-    {
-      relayBlinkDelay = HAL_GetTick();
-      HAL_GPIO_TogglePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin);
-      STM_LOGI(MAIN_TAG, "relay toggles");
-    }
+//    if (HAL_GetTick() - relayBlinkDelay >= 5000)
+//    {
+//      relayBlinkDelay = HAL_GetTick();
+//      HAL_GPIO_TogglePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin);
+//      STM_LOGI(MAIN_TAG, "relay toggles");
+//    }
 
     //vSpi1Write(RegFifo, ucData);
     ucData = ucSpi1Read(RegFrfMsb);
@@ -349,6 +349,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    STM_LOGE(MAIN_TAG, "");
   }
   /* USER CODE END Error_Handler_Debug */
 }

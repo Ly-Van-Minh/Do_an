@@ -28,12 +28,12 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
     ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
     if (ret != HAL_OK)
     {
-        STM_LOGE(LORA_TAG, "error [%d]", ret);
+        STM_LOGE(LORA_TAG, "ret [%d]", ret);
     }
     ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
     if (ret != HAL_OK)
     {
-        STM_LOGE(LORA_TAG, "error [%d]", ret);
+        STM_LOGE(LORA_TAG, "ret [%d]", ret);
     }
     HAL_Delay(10);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
@@ -54,12 +54,12 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
     ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
     if (ret != HAL_OK)
     {
-        STM_LOGE(LORA_TAG, "error [%d]", ret);
+        STM_LOGE(LORA_TAG, "ret [%d]", ret);
     }
     ret = HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
     if (ret != HAL_OK)
     {
-        STM_LOGE(LORA_TAG, "error [%d]", ret);
+        STM_LOGE(LORA_TAG, "ret [%d]", ret);
     }
     HAL_Delay(10);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
