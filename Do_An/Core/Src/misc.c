@@ -81,7 +81,7 @@ const char *resetCauseGetName(reset_cause_t reset_cause)
     return reset_cause_name;
 }
 
-void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis)
+uint32_t iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis)
 {
     uint32_t configTime = millis;
     if (configTime > PRESCALER_256_UPPER_LIMIT)
@@ -97,4 +97,5 @@ void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis)
     {
         _Error_Handler(__FILE__, __LINE__);
     }
+    return configTime;
 }

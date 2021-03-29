@@ -27,7 +27,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "retarget.h"
 #include "stm_log.h"
 #include "misc.h"
 #include "lora.h"
@@ -96,14 +95,14 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
-  RetargetInit(&huart1);
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  iwdgInit(&hiwdg, 10000);
-  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: %s", resetCauseGetName(resetCauseGet()));
-  STM_LOGD(MAIN_TAG, "Start Application");
+
+  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
+  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
+  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
   ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
   /* USER CODE END 2 */
 

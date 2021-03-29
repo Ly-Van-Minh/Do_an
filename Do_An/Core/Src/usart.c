@@ -21,6 +21,7 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "retarget.h"
 extern USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END 0 */
 
@@ -51,6 +52,7 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
+  RetargetInit(&huart1);
   /* USER CODE END USART1_Init 2 */
 
 }

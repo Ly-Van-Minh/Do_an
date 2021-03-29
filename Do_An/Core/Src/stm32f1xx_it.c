@@ -305,7 +305,7 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
     if(blinkLedDelay == 500){
       blinkLedDelay = 0;
-      TOGGLE_LED_OUTPUT();
+      TOGGLE_LED();
     }
   }
 }

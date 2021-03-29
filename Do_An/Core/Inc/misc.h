@@ -2,7 +2,7 @@
 #define __MISC_H
 
 #include "main.h"
-
+#include "stm_log.h"
 typedef enum reset_cause
 {
     eRESET_CAUSE_UNKNOWN = 0,
@@ -23,6 +23,6 @@ typedef enum reset_cause
 
 reset_cause_t resetCauseGet(void);
 const char *resetCauseGetName(reset_cause_t reset_cause);
-void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis);
+uint32_t iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis);
 
 #endif // !
