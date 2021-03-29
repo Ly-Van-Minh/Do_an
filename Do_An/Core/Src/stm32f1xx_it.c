@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm_log.h"
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +59,10 @@ const char *ISR_TAG = "STM32F1xx_IT_C";
 
 /* External variables --------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
+extern TIM_HandleTypeDef htim4;
+extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
+extern USART_CLI_HandleTypedef_t uartCliHandle;
 uint16_t adcValue = 0;
 /* USER CODE END EV */
 
@@ -215,16 +219,89 @@ void ADC1_2_IRQHandler(void)
   /* USER CODE END ADC1_2_IRQn 1 */
 }
 
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+  STM_LOGD(ISR_TAG, "");
+  /* USER CODE END USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+__weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   if (hadc->Instance == hadc1.Instance)
   {
     adcValue = HAL_ADC_GetValue(hadc);
   }
-  /* NOTE : This function should not be modified. When the callback is needed,
-            function HAL_ADC_ConvCpltCallback must be implemented in the user file.
-   */
+}
+
+__weak void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Process USART2 Receive_Cplt_IT */
+  if (huart->Instance == huart1.Instance)
+  {
+    /* Reset Receive Buffer whenever index_value = 0 */
+    if (uartCliHandle._rxIndex == 0)
+    {
+      for (uint8_t i = 0; i < USART_BUFFER_SIZE; i++)
+      {
+        uartCliHandle._rxBuffer[i] = 0;
+      }
+    }
+    /* If user input data not equal to "\r" */
+    if (uartCliHandle._rxData[0] != '\r')
+    {
+      uartCliHandle._rxBuffer[uartCliHandle._rxIndex++] = uartCliHandle._rxData[0];
+    }
+    /* If user input data = "\r" */
+    else
+    {
+      uartCliHandle._rxIndex = 0;
+      uartCliHandle._rxCpltFlag = 1;
+    }
+    /* Trigger to Receive and jump into ISR on each ISR process is necessary */
+    HAL_UART_Receive_IT(huart, (uint8_t *)(&uartCliHandle._rxData), 1);
+  }
+}
+
+__weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+  if (htim->Instance == htim4.Instance)
+  {
+    static uint32_t millisSecond;
+    millisSecond++;
+    if (millisSecond == 70)
+    {
+      millisSecond = 0;
+      if (uartCliHandle._rxCpltFlag == 1)
+      {
+        STM_LOGI(ISR_TAG, "receive uart cmd: %s", (uint8_t *)uartCliHandle._rxBuffer);
+        runUserCmd(&uartCliHandle);
+      }
+    }
+  }
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,26 +1,27 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -55,6 +56,7 @@ uint8_t ucData = 0;
 uint32_t relayBlinkDelay = 0;
 uint32_t ledBlinkDelay = 0;
 extern uint16_t adcValue;
+USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,30 +97,29 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
+  RetargetInit(&huart1);
   MX_ADC1_Init();
   MX_SPI1_Init();
-  MX_USART1_UART_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   iwdgInit(&hiwdg, 10000);
-  RetargetInit(&huart1);
-  STM_LOGD(MAIN_TAG, "ResetCause: %s", resetCauseGetName(resetCauseGet()));
-  STM_LOGI(MAIN_TAG, "Start Application");
-
+  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: %s", resetCauseGetName(resetCauseGet()));
+  STM_LOGD(MAIN_TAG, "Start Application");
+  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_ADC_Start_IT(&hadc1);
   relayBlinkDelay = ledBlinkDelay = HAL_GetTick();
   while (1)
   {
     if (HAL_GetTick() - ledBlinkDelay >= 500)
     {
       TOGGLE_LED_OUTPUT();
-      STM_LOGI(MAIN_TAG, "light is {%s}", WHICH_LIGHT(adcValue));
+      // STM_LOGI(MAIN_TAG, "light is {%s}", WHICH_LIGHT(adcValuTIMe));
       ledBlinkDelay = HAL_GetTick();
     }
-
     /* reset IWDG */
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */

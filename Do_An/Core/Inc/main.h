@@ -33,7 +33,7 @@ extern "C"
 
   /* Private includes ----------------------------------------------------------*/
   /* USER CODE BEGIN Includes */
-
+#include "stm_log.h"
   /* USER CODE END Includes */
 
   /* Exported types ------------------------------------------------------------*/
@@ -74,9 +74,16 @@ extern "C"
 /* USER CODE BEGIN Private defines */
 #define LIGHT_THRESHOLD (1000u)
 #define IS_LIGHT_ON(adcValue) ((adcValue < LIGHT_THRESHOLD) ? true : false)
-#define WHICH_LIGHT(adcValue) ((adcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")   
+
+#define WHICH_LIGHT(adcValue) ((adcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")
+#define WHICH_ERROR(err) (err == HAL_ERROR) ? "HAL_ERROR" : ((err == HAL_BUSY) ? "HAL_BUSY" : "HAL_TIMEOUT")
 /* Toggle pin */
 #define TOGGLE_LED_OUTPUT() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
+#define ERROR_CHECK(ret)                                       \
+  if (ret != HAL_OK)                                           \
+  {                                                            \
+    STM_LOGE("ERROR_CHECK_TAG", "error: %s", WHICH_ERROR(ret)) \
+  }
 
   /* USER CODE END Private defines */
 

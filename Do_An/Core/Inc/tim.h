@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    usart.h
+  * @file    tim.h
   * @brief   This file contains all the function prototypes for
-  *          the usart.c file
+  *          the tim.c file
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USART_H__
-#define __USART_H__
+#ifndef __TIM_H__
+#define __TIM_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,30 +31,22 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern UART_HandleTypeDef huart1;
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN Private defines */
-#define USART_BUFFER_SIZE (30u)
-  typedef struct USART_StringReceive
-  {
-    uint8_t _rxIndex;
-    uint8_t _rxBuffer[USART_BUFFER_SIZE];
-    uint8_t _rxData[2];
-    uint8_t _rxCpltFlag;
-  } USART_CLI_HandleTypedef_t;
 
 /* USER CODE END Private defines */
 
-void MX_USART1_UART_Init(void);
+void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void runUserCmd(USART_CLI_HandleTypedef_t *uartCliHandle);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __USART_H__ */
+#endif /* __TIM_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
