@@ -21,7 +21,7 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+extern USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -51,7 +51,6 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -83,6 +82,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* USART1 interrupt Init */
+    HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
 
   /* USER CODE END USART1_MspInit 1 */
@@ -106,6 +108,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
 
+    /* USART1 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspDeInit 1 */
 
   /* USER CODE END USART1_MspDeInit 1 */
@@ -113,7 +117,37 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void runUserCmd(USART_CLI_HandleTypedef_t *uartCliHandle)
+{
 
+//  char *input_string = (char *)&uartCliHandle->_rxBuffer;
+  /* Clear receive complete flag */
+  uartCliHandle->_rxCpltFlag = 0;
+  /* Execute command */
+  // PRINTF("Command string: \"%s\"\r\n", uartCliHandle->_rxBuffer);
+  // if (IS_STRING(input_string, "help"))
+  // {
+  //   printf("/* -------------------------------------------------------------------------- */\r\n");
+  //   printf("/*                               CLI - HELP MENU                              */\r\n");
+  //   printf("/*--------------------------------------------------------------------------- */\r\n");
+  //   printf("\"help\"                 : Display help menu\r\n");
+  //   printf("\"<LED_color> <state>\"  : Control equivalent color LED on or off\r\n");
+  //   printf("\"time\"                 : Get MCU working time\r\n");
+  //   printf("\"process\"              : Evaluate superloop processing time\r\n");
+  //   printf("\"reboot\"               : Perform chip reset\r\n");
+  //   printf("\"clock\"                : MCU clock\r\n");
+  //   printf("\r\n\r\n>>> ");
+  // }
+  // else if (IS_STRING(input_string, "reboot"))
+  // {
+  //   NVIC_SystemReset();
+  // }
+  // else
+  // {
+  //   printf("Unknown Command: \"%s\"\r\n", input_string);
+  //   printf("\r\n\r\n>>> ");
+  // }
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

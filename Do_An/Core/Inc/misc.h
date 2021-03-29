@@ -15,6 +15,7 @@ typedef enum reset_cause
     eRESET_CAUSE_BROWNOUT_RESET,             /*  */
 } reset_cause_t;
 
+
 /* Independent watchdog constant  */
 #define PRESCALER_128_UPPER_LIMIT (13107u)
 #define PRESCALER_256_UPPER_LIMIT (26214u)
@@ -23,6 +24,5 @@ typedef enum reset_cause
 reset_cause_t resetCauseGet(void);
 const char *resetCauseGetName(reset_cause_t reset_cause);
 void iwdgInit(IWDG_HandleTypeDef *hiwdg, uint32_t millis);
-
 
 #endif // !
