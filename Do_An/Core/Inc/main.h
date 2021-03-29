@@ -71,19 +71,25 @@ extern "C"
 #define SPI1_NSS_GPIO_Port GPIOA
 #define LED_OUTPUT_Pin GPIO_PIN_0
 #define LED_OUTPUT_GPIO_Port GPIOB
-/* USER CODE BEGIN Private defines */
-#define LIGHT_THRESHOLD (1000u)
-#define IS_LIGHT_ON(lightSensorAdcValue) ((lightSensorAdcValue < LIGHT_THRESHOLD) ? true : false)
 
+
+/* USER CODE BEGIN Private defines */
+
+/* Enum value to string */
 #define WHICH_LIGHT(lightSensorAdcValue) ((lightSensorAdcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")
 #define WHICH_ERROR(err) (err == HAL_ERROR) ? "HAL_ERROR" : ((err == HAL_BUSY) ? "HAL_BUSY" : "HAL_TIMEOUT")
+
 /* Toggle pin */
 #define TOGGLE_LED_OUTPUT() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
-#define ERROR_CHECK(ret)                                       \
-  if (ret != HAL_OK)                                           \
-  {                                                            \
+#define ERROR_CHECK(ret)                                        \
+  if (ret != HAL_OK)                                            \
+  {                                                             \
     STM_LOGE("ERROR_CHECK_TAG", "[Error] %s", WHICH_ERROR(ret)) \
   }
+
+#define LIGHT_THRESHOLD (1000u)
+#define IS_LIGHT_ON(lightSensorAdcValue) ((lightSensorAdcValue < LIGHT_THRESHOLD) ? true : false)
+#define READ_LORA_REGISTER(req) STM_LOGI("LORA_TAG", "%s: 0x%x", #req, ucSpi1Read(req))
 
   /* USER CODE END Private defines */
 

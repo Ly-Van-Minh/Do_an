@@ -40,6 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,7 +52,7 @@
 
 /* USER CODE BEGIN PV */
 IWDG_HandleTypeDef hiwdg;
-const char *MAIN_TAG = "MAIN_C_TAG";
+const char *MAIN_TAG = "MAIN_TAG";
 extern uint16_t lightSensorAdcValue;
 USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END PV */

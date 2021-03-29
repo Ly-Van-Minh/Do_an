@@ -9,7 +9,8 @@
 #include "string.h"
 #include "stm_log.h"
 
-const char *LORA_TAG = "LORA_C_TAG";
+/* Variables */
+const char *LORA_TAG = "LORA_TAG";
 extern SPI_HandleTypeDef hspi1;
 
 /**
@@ -22,21 +23,12 @@ extern SPI_HandleTypeDef hspi1;
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
 {
     ucAddress |= 0x80; /* A wnr bit, which is 1 for write access and 0 for read access */
-    HAL_StatusTypeDef ret = HAL_ERROR;
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
     HAL_Delay(10);
-    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
-    if (ret != HAL_OK)
-    {
-        STM_LOGE(LORA_TAG, "ret [%d]", ret);
-    }
-    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
-    if (ret != HAL_OK)
-    {
-        STM_LOGE(LORA_TAG, "ret [%d]", ret);
-    }
+    ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
+    ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
     HAL_Delay(10);
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -47,22 +39,13 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
 uint8_t ucSpi1Read(uint8_t ucAddress)
 {
     uint8_t ucData = 0;
-    HAL_StatusTypeDef ret = HAL_ERROR;
     ucAddress &= 0x7F; /* A wnr bit, which is 1 for write access and 0 for read access */
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
     HAL_Delay(10);
-    ret = HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100);
-    if (ret != HAL_OK)
-    {
-        STM_LOGE(LORA_TAG, "ret [%d]", ret);
-    }
-    ret = HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100);
-    if (ret != HAL_OK)
-    {
-        STM_LOGE(LORA_TAG, "ret [%d]", ret);
-    }
+    ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
+    ERROR_CHECK(HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
     HAL_Delay(10);
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, LED_OUTPUT_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
     return ucData;
 }
 
