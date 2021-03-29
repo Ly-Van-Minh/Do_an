@@ -12,4 +12,4 @@ stm32f1xx_it.c:225:6:TIM4_IRQHandler	8	static
 stm32f1xx_it.c:239:6:USART1_IRQHandler	32	static
 stm32f1xx_it.c:251:13:HAL_ADC_ConvCpltCallback	16	static
 stm32f1xx_it.c:259:13:HAL_UART_RxCpltCallback	24	static
-stm32f1xx_it.c:288:13:HAL_TIM_PeriodElapsedCallback	40	static
+stm32f1xx_it.c:288:13:HAL_TIM_PeriodElapsedCallback	16	static

@@ -73,16 +73,16 @@ extern "C"
 #define LED_OUTPUT_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define LIGHT_THRESHOLD (1000u)
-#define IS_LIGHT_ON(adcValue) ((adcValue < LIGHT_THRESHOLD) ? true : false)
+#define IS_LIGHT_ON(lightSensorAdcValue) ((lightSensorAdcValue < LIGHT_THRESHOLD) ? true : false)
 
-#define WHICH_LIGHT(adcValue) ((adcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")
+#define WHICH_LIGHT(lightSensorAdcValue) ((lightSensorAdcValue < LIGHT_THRESHOLD) ? "ON" : "OFF")
 #define WHICH_ERROR(err) (err == HAL_ERROR) ? "HAL_ERROR" : ((err == HAL_BUSY) ? "HAL_BUSY" : "HAL_TIMEOUT")
 /* Toggle pin */
 #define TOGGLE_LED_OUTPUT() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
 #define ERROR_CHECK(ret)                                       \
   if (ret != HAL_OK)                                           \
   {                                                            \
-    STM_LOGE("ERROR_CHECK_TAG", "error: %s", WHICH_ERROR(ret)) \
+    STM_LOGE("ERROR_CHECK_TAG", "[Error] %s", WHICH_ERROR(ret)) \
   }
 
   /* USER CODE END Private defines */

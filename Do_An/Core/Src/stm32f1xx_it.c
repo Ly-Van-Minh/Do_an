@@ -63,7 +63,7 @@ extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 extern USART_CLI_HandleTypedef_t uartCliHandle;
-uint16_t adcValue = 0;
+uint16_t lightSensorAdcValue = 0;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -252,7 +252,7 @@ __weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   if (hadc->Instance == hadc1.Instance)
   {
-    adcValue = HAL_ADC_GetValue(hadc);
+    lightSensorAdcValue = HAL_ADC_GetValue(hadc);
   }
 }
 
@@ -290,16 +290,22 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
   if (htim->Instance == htim4.Instance)
   {
-    static uint32_t millisSecond;
+    static uint16_t millisSecond;
+    static uint16_t blinkLedDelay;
     millisSecond++;
+    blinkLedDelay++;
     if (millisSecond == 70)
     {
       millisSecond = 0;
       if (uartCliHandle._rxCpltFlag == 1)
       {
-        STM_LOGI(ISR_TAG, "receive uart cmd: %s", (uint8_t *)uartCliHandle._rxBuffer);
+        // STM_LOGI(ISR_TAG, "receive uart cmd: %s", (uint8_t *)uartCliHandle._rxBuffer);
         runUserCmd(&uartCliHandle);
       }
+    }
+    if(blinkLedDelay == 500){
+      blinkLedDelay = 0;
+      TOGGLE_LED_OUTPUT();
     }
   }
 }

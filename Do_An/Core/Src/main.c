@@ -52,10 +52,7 @@
 /* USER CODE BEGIN PV */
 IWDG_HandleTypeDef hiwdg;
 const char *MAIN_TAG = "MAIN_C_TAG";
-uint8_t ucData = 0;
-uint32_t relayBlinkDelay = 0;
-uint32_t ledBlinkDelay = 0;
-extern uint16_t adcValue;
+extern uint16_t lightSensorAdcValue;
 USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END PV */
 
@@ -111,15 +108,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  relayBlinkDelay = ledBlinkDelay = HAL_GetTick();
   while (1)
   {
-    if (HAL_GetTick() - ledBlinkDelay >= 500)
-    {
-      TOGGLE_LED_OUTPUT();
-      // STM_LOGI(MAIN_TAG, "light is {%s}", WHICH_LIGHT(adcValuTIMe));
-      ledBlinkDelay = HAL_GetTick();
-    }
     /* reset IWDG */
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */

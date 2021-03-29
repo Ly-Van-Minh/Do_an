@@ -63,7 +63,6 @@ void MX_ADC1_Init(void)
   }
   /* USER CODE BEGIN ADC1_Init 2 */
   ERROR_CHECK(HAL_ADC_Start_IT(&hadc1));
-
   /* USER CODE END ADC1_Init 2 */
 
 }
