@@ -1,22 +1,21 @@
 <h1>Basic of Frequency and Bandwidth</h1>
-Definition of Bandwidth
+Definition of Bandwidth</br>
 Bandwidth is completely related to frequency but definitely, bandwidth is not frequency. However, bandwidth is the range of frequencies. Bandwidth is defined as the difference in the upper and lower frequency components present in a signal. Thus, it specifies the amount of data being transmitted per second.
-Basically, we know that a signal which is transmitted from an end to another consists of various frequency components. Then among the various frequencies how can we specify the range occupied by the complete signal?
+Basically, we know that a signal which is transmitted from an end to another consists of various frequency components. Then among the various frequencies how can we specify the range occupied by the complete signal?</br>
 
-As bandwidth provides an idea about the range of the transmitted signal. So, the range of the signal is determined by calculating the difference between the lowest and highest frequency component present in the signal.
+As bandwidth provides an idea about the range of the transmitted signal. So, the range of the signal is determined by calculating the difference between the lowest and highest frequency component present in the signal.</br>
 
-Suppose a signal which is to be transmitted has different frequencies such as 6000MHz, 4200MHz, 1500 MHz, and 820 MHZ. So, here the signal bandwidth will be specified by the difference of the lowest and highest frequency component.
+Suppose a signal which is to be transmitted has different frequencies such as 6000MHz, 4200MHz, 1500 MHz, and 820 MHZ. So, here the signal bandwidth will be specified by the difference of the lowest and highest frequency component.</br>
 
-Bandwidth = 6000 MHz – 820 MHz = 5180 MHz
+Bandwidth = 6000 MHz – 820 MHz = 5180 MHz</br>
 
 <h1>LoRa parameters</h1>
-The parameters used by LoRa are SF, coding rate (CR), and bandwidth (BW):
-- SF determines the number of chips per symbol, which is inversely proportional to the modulation rate of the chirp. LoRa can be configured for spreading factors between 5 and 12, although only 6 through 12 are accessible in the sub-gigahertz band, and 6 often requires a TXCO to be stable
-- CR is the ratio of non-redundant data to all data within the transmit and receive frames.  LoRa coding rate essentially controls the amount of Forward Error Correction that is added to the payload data. As such, a higher coding rate will not increase range, but will make a link more reliable if interference is present. As one would expect, it also comes at the cost of decreasing the data rate. LoRa can be configured for four different coding rates.
+The parameters used by LoRa are SF, coding rate (CR), and bandwidth (BW):</br>
+- SF determines the number of chips per symbol, which is inversely proportional to the modulation rate of the chirp. LoRa can be configured for spreading factors between 5 and 12, although only 6 through 12 are accessible in the sub-gigahertz band, and 6 often requires a TXCO to be stable</br>
+- CR is the ratio of non-redundant data to all data within the transmit and receive frames.  LoRa coding rate essentially controls the amount of Forward Error Correction that is added to the payload data. As such, a higher coding rate will not increase range, but will make a link more reliable if interference is present. As one would expect, it also comes at the cost of decreasing the data rate. LoRa can be configured for four different coding rates.</br>
 - BW can take one of three values: 125, 250, or 500 kHz
-Because they affect LoRa packet modulation and demodulation, these parameters must agree between transmitter and receiver for successful communication.If the BW of LoRa is constant, the chirp rate differs according to the SF. For each SF, the orthogonality of the chirp prevents interference with any other; when two or more transmitters use the same channel to simultaneously transmit with different SFs, the packets do not interfere with each other
-To check the presence of LoRa signals, channel activity detection (CAD) is performed. The CAD mode efficiently detects the LoRa preamble signal [7,8]. A receiver in CAD mode only detects a preamble with a matching SF
-For more detail, please refer to following:
+Because they affect LoRa packet modulation and demodulation, these parameters must agree between transmitter and receiver for successful communication.If the BW of LoRa is constant, the chirp rate differs according to the SF. For each SF, the orthogonality of the chirp prevents interference with any other; when two or more transmitters use the same channel to simultaneously transmit with different SFs, the packets do not interfere with each other</br>
+To check the presence of LoRa signals, channel activity detection (CAD) is performed. The CAD mode efficiently detects the LoRa preamble signal [7,8]. A receiver in CAD mode only detects a preamble with a matching SF</br>
 
 <h1>How to calculate these parameters properly</h1>
 When setting up a LoRa transceiver, you will not only need to know what frequency it should transmit on, and what the output power should be, but also three other parameters, that will drastically change how the transceiver operates. These parameters are:
@@ -41,6 +40,8 @@ Where the bandwidth and spreading factor controls physical parameters of the mod
 The coding rate describes the ratio of actual data to error-correcting data added. In choosing the LoRa coding rate, it is important to consider whether it’s necessary to permanently employ a high coding rate, with subsequent loss of data rate, or whether it is more efficient over-all to allow for the occasional dropped packet due to interference. 
 
 Since the coding rate does not modify the physical parameters of the modulation, two (or more) LoRa transceivers configured with different coding rates can still decode each others signals. This might be useful if a receiver is located in an area with high amounts of interference, but the other end of the link is not. In such a case, the two transceivers can be configured with asymmetric coding rates, such that optimal transfer rates can be achieved, even though interference levels vary at the different sites.
+
+For more information, please refer to following:
 
 1. An Adaptive Spreading Factor Selection Scheme for a Single Channel LoRa Modem:
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7070984/#B5-sensors-20-01008
