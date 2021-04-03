@@ -49,5 +49,8 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7070984/#B5-sensors-20-01008
 2. Spreading Factor, Bandwidth, Coding Rate and Bit Rate in LoRa (English)
 https://josefmtd.com/2018/08/14/spreading-factor-bandwidth-coding-rate-and-bit-rate-in-lora-english/#:~:text=The%20value%20of%20Spreading%20Factor,gain%20from%20the%20receiver%20side.
 
+Programming References - Heltec Automation Docs - STM32 + LORA
+https://heltec-automation-docs.readthedocs.io/en/latest/stm32/index.html
+
 Webtool - LoRa bitrate calculator and understanding LoRa parameters:
 https://unsigned.io/understanding-lora-parameters/
