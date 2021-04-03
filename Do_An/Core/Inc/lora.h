@@ -10,38 +10,85 @@
 #define __LORA_H
 
 #include <stdint.h>
+#include "stm32f1xx_hal.h"
 
+ADC_HandleTypeDef hadc1;
+
+SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart1;
 
 /* Define Long Range Mode*/
-#define LORA_MODE           1u   /* LoRaTM Mode */
-#define FSK_OOK_MODE        0u   /* FSK/OOK Mode */
+#define LORA_MODE                   1u   /* LoRaTM Mode */
+#define FSK_OOK_MODE                0u   /* FSK/OOK Mode */
 /* Define Node Address */
-#define NODE1_ADDRESS       0x11 /* Address node 1 */
-#define NODE2_ADDRESS       0x22 /* Address node 2 */
-#define NODE3_ADDRESS       0x33 /* Address node 3 */
+#define NODE1_ADDRESS               0x11u /* Address node 1 */
+#define NODE2_ADDRESS               0x22u /* Address node 2 */
+#define NODE3_ADDRESS               0x33u /* Address node 3 */
+#define GATEWAY_ADDRESS             0x44u /* Adress Gateway */
 
-#define PAYLOAD_LENGHT      3u   /* Payload Lenght */
-#define RELAY_ON            0xAA
-#define RELAY_OFF           0xBB
+#define RELAY_ON                    0xAAu
+#define RELAY_OFF                   0xBBu
+#define SPI1_READ                   0x7Fu
+#define SPI1_WRITE                  0x80u
 
-#define BANDWIDTH_7K8       0u
-#define BANDWIDTH_10K4      1u
-#define BANDWIDTH_15K6      2u
-#define BANDWIDTH_20K8      3u
-#define BANDWIDTH_31K25     4u
-#define BANDWIDTH_41K7      5u
-#define BANDWIDTH_62K5      6u
-#define BANDWIDTH_125K      7u
-#define BANDWIDTH_250K      8u
-#define BANDWIDTH_500K      9u
+#define BANDWIDTH_7K8               0u
+#define BANDWIDTH_10K4              1u
+#define BANDWIDTH_15K6              2u
+#define BANDWIDTH_20K8              3u
+#define BANDWIDTH_31K25             4u
+#define BANDWIDTH_41K7              5u
+#define BANDWIDTH_62K5              6u
+#define BANDWIDTH_125K              7u
+#define BANDWIDTH_250K              8u
+#define BANDWIDTH_500K              9u
 
-#define CODING_RATE_4_5     1u
-#define CODING_RATE_4_6     2u
-#define CODING_RATE_4_7     3u
-#define CODING_RATE_4_8     4u
+#define CODING_RATE_4_5             1u
+#define CODING_RATE_4_6             2u
+#define CODING_RATE_4_7             3u
+#define CODING_RATE_4_8             4u
 
-#define EXPLICIT_HEADER     0u
-#define IMPLICIT_HEADER     0u
+#define EXPLICIT_HEADER             0u
+#define IMPLICIT_HEADER             1u
+
+#define SPREADING_FACTOR_64         6u
+#define TX_NORMAL_MODE              0u
+#define CRC_ENABLE                  1u
+#define RX_TIMEOUT                  0x0064u
+#define PREAMBLE_LENGTH             0x0008u
+#define PAYLOAD_LENGHT              3u   /* Payload Lenght */
+#define LOW_DATA_RATE_OPTIMIZE      1u
+#define LORA_DETECTION_OPTIMIZE     5u
+#define LORA_DETECTION_THRESHOLD    0x0Cu 
+#define LORA_SYNC_WORD              0x20u
+#define AGC_REFERENCE               0x19u
+#define AGC_STEP1                   0x0Cu
+#define AGC_STEP2                   0x04u
+#define AGC_STEP3                   0x0Bu
+#define AGC_STEP4                   0x0Cu
+#define AGC_STEP5                   0x0Cu
+#define PLL_BANDWIDTH               0x03u
+
+#define PA_BOOST                    1u   /* Selects PA output pin:  PA_BOOST pin */
+#define RF_FREQUENCY                0x6C8000u
+#define OUTPUT_POWER                15u
+#define OCP_ON                      1u   /* Enables overload current protection (OCP) for PA */
+#define OCP_TRIM                    27u  /* Trimming of OCP current */
+#define G1                          1u   /* LNA gain setting: G1 = maximum gain */
+#define LNA_BOOST_LF                0u   /* Default LNA current */
+#define LNA_BOOST_HF                3u   /* Boost on, 150% LNA current */
+#define FIFO_TX_BASE_ADDR           0x80u /* Base address in FIFO data buffer for TX modulator */
+#define FIFO_RX_BASE_ADDR           0u  /* Base address in FIFO data buffer for RX demodulator */
+#define IRQ_FLAGS_MASK              0u
+#define RX_TIMEOUT_FLAG             0x80u
+#define RX_DONE_FLAG                0x40u
+#define PAYLOAD_CRC_ERROR_FLAG      0x20u
+#define VALID_HEADER_FLAG           0x10u
+#define TX_DONE_FLAG                0x08u
+#define CAD_DONE_FLAG               0x04u
+#define FHSS_CHANGE_CHANNEL_FLAG    0x02u
+#define CAD_DETECTED_FLAG           0x01u
+
 
 /* Define Device Mode */
 #define SLEEP_MODE          0u   /* Sleep */
@@ -173,6 +220,7 @@
 /********************* End define registers of modele Lora *******************/
 
 /**************************** Private functions ******************************/
+
 /* Init Lora functions */
 void vUart1Transmit(uint8_t* pcString);
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData);
@@ -189,7 +237,7 @@ void vMaxPowerInit(uint8_t ucMaxPower);
 void vOutputPowerInit(uint8_t ucOutputPower);
 void vPaRampInit(uint8_t ucRegPaRamp);
 void vOcpOnInit(uint8_t ucOcpOn);
-void vOcpTrim(uint8_t ucOcpTrim);
+void vOcpTrimInit(uint8_t ucOcpTrim);
 void vLnaGainInit(uint8_t ucLnaGain);
 void vLnaBoostLfInit(uint8_t ucLnaBoostLf);
 void vLnaBoostHfInit(uint8_t ucLnaBoostHf);
@@ -222,7 +270,7 @@ uint8_t ucFhssPresentChannelRead(void);
 void vBandWidthInit(uint8_t ucBandWidth);
 void vCodingRateInit(uint8_t ucCodingRate);
 void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode);
-void vSpreadingFactor(uint8_t ucSpreadingFactor);
+void vSpreadingFactorInit(uint8_t ucSpreadingFactor);
 void vTxContinuousModeInit(uint8_t ucTxContinuousMode);
 void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn);
 void vSymbTimeoutInit(uint16_t ucSymbTimeout);
@@ -257,6 +305,7 @@ void vAgcStep3Init(uint8_t ucAgcStep3);
 void vAgcStep4Init(uint8_t ucAgcStep4);
 void vAgcStep5Init(uint8_t ucAgcStep5);
 void vRegPllInit(uint8_t ucRegPll);
+void vLoraInit(void);
 
 /************************** End private functions ****************************/
 #endif /* !_LORA_H_ */
