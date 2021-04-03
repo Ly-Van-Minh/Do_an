@@ -11,8 +11,8 @@ Bandwidth = 6000 MHz – 820 MHz = 5180 MHz
 
 <h1>LoRa parameters</h1>
 The parameters used by LoRa are SF, coding rate (CR), and bandwidth (BW):
-- SF determines the number of chips per symbol, which is inversely proportional to the modulation rate of the chirp. Ranging between 4/5 and 4/8
-- CR is the ratio of non-redundant data to all data within the transmit and receive frames
+- SF determines the number of chips per symbol, which is inversely proportional to the modulation rate of the chirp. LoRa can be configured for spreading factors between 5 and 12, although only 6 through 12 are accessible in the sub-gigahertz band, and 6 often requires a TXCO to be stable
+- CR is the ratio of non-redundant data to all data within the transmit and receive frames.  LoRa coding rate essentially controls the amount of Forward Error Correction that is added to the payload data. As such, a higher coding rate will not increase range, but will make a link more reliable if interference is present. As one would expect, it also comes at the cost of decreasing the data rate. LoRa can be configured for four different coding rates.
 - BW can take one of three values: 125, 250, or 500 kHz
 Because they affect LoRa packet modulation and demodulation, these parameters must agree between transmitter and receiver for successful communication.If the BW of LoRa is constant, the chirp rate differs according to the SF. For each SF, the orthogonality of the chirp prevents interference with any other; when two or more transmitters use the same channel to simultaneously transmit with different SFs, the packets do not interfere with each other
 To check the presence of LoRa signals, channel activity detection (CAD) is performed. The CAD mode efficiently detects the LoRa preamble signal [7,8]. A receiver in CAD mode only detects a preamble with a matching SF
