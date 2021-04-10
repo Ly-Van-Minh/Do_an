@@ -54,6 +54,8 @@ IWDG_HandleTypeDef hiwdg;
 const char *MAIN_TAG = "MAIN_TAG";
 extern uint16_t lightSensorAdcValue;
 USART_CLI_HandleTypedef_t uartCliHandle;
+
+uint8_t ucMatrix[PAYLOAD_LENGHT] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,10 +102,13 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
-  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
-  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
-  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
-  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
+//  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
+//  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
+//  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
+//  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
+  vLoraInit();
+  vLoraTransmit(ucMatrix, TX_CONTINOUS);
+  // vLoraReceive(ucMatrix, RX_CONTINUOUS);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,7 +116,7 @@ int main(void)
   while (1)
   {
     /* reset IWDG */
-    HAL_IWDG_Refresh(&hiwdg);
+    // HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

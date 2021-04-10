@@ -26,6 +26,11 @@
 #define SPI1_READ                   0x7Fu
 #define SPI1_WRITE                  0x80u
 
+#define RX_SINGLE                   0u
+#define RX_CONTINUOUS               1u
+#define TX_SINGLE                   0u
+#define TX_CONTINOUS                1u
+
 #define BANDWIDTH_7K8               0u
 #define BANDWIDTH_10K4              1u
 #define BANDWIDTH_15K6              2u
@@ -51,8 +56,12 @@
 #define RX_TIMEOUT                  0x0064u
 #define PREAMBLE_LENGTH             0x0008u
 #define PAYLOAD_LENGHT              3u   /* Payload Lenght */
+#define PAYLOAD_MAX_LENGTH          0xFFu
+#define FREQ_HOPPING_PERIOD         0u
+#define AGC_AUTO                    0u
 #define LOW_DATA_RATE_OPTIMIZE      1u
 #define LORA_DETECTION_OPTIMIZE     5u
+#define INVERT_IQ                   0u
 #define LORA_DETECTION_THRESHOLD    0x0Cu 
 #define LORA_SYNC_WORD              0x20u
 #define AGC_REFERENCE               0x19u
@@ -62,10 +71,20 @@
 #define AGC_STEP4                   0x0Cu
 #define AGC_STEP5                   0x0Cu
 #define PLL_BANDWIDTH               0x03u
+#define PREAMBBLE_DETECT_INTERRUPT  1u
+#define RX_DONE                     0u
+#define TX_DONE                     1u
+#define CAD_DONE                    2u
+#define TCXO_INPUT                  0u
+#define PA_DAC                      0x07u
 
-#define PA_BOOST                    1u   /* Selects PA output pin:  PA_BOOST pin */
+#define ACCESS_LORA_REGISTERS       0u
+#define ACCESS_LOW_FREQUENCY_MODE   1u
 #define RF_FREQUENCY                0x6C8000u
+#define PA_BOOST                    1u   /* Selects PA output pin:  PA_BOOST pin */
+#define MAX_POWER                   7u
 #define OUTPUT_POWER                15u
+#define PA_RAMP                     8u
 #define OCP_ON                      1u   /* Enables overload current protection (OCP) for PA */
 #define OCP_TRIM                    27u  /* Trimming of OCP current */
 #define G1                          1u   /* LNA gain setting: G1 = maximum gain */
@@ -215,10 +234,11 @@
 /**************************** Private functions ******************************/
 
 /* Init Lora functions */
+
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData);
 uint8_t ucSpi1Read(uint8_t ucAddress);
-uint8_t ucReadFifo(void);
-void vWriteFifo(uint8_t ucData);
+// uint8_t ucReadFifo(void);
+// void vWriteFifo(uint8_t ucData);
 void vLongRangeModeInit(uint8_t ucLongRangeMode);
 void vAccessSharedRegInit(uint8_t ucAccessSharedReg);
 void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn);
@@ -233,8 +253,8 @@ void vOcpTrimInit(uint8_t ucOcpTrim);
 void vLnaGainInit(uint8_t ucLnaGain);
 void vLnaBoostLfInit(uint8_t ucLnaBoostLf);
 void vLnaBoostHfInit(uint8_t ucLnaBoostHf);
-uint8_t ucFifoAddrPtrRead(void);
-void vFifoAddrPtrWrite(uint8_t ucFifoAddrPtr);
+// uint8_t ucFifoAddrPtrRead(void);
+// void vFifoAddrPtrWrite(uint8_t ucFifoAddrPtr);
 void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr);
 void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr);
 uint8_t ucFifoRxCurrentAddrRead(void);
@@ -298,8 +318,9 @@ void vAgcStep4Init(uint8_t ucAgcStep4);
 void vAgcStep5Init(uint8_t ucAgcStep5);
 void vPllBandwidth(uint8_t ucPllBandwidth);
 void vLoraInit(void);
+void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode);
+void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode);
 
 /************************** End private functions ****************************/
 #endif /* !_LORA_H_ */
 /****************************** END OF FILE **********************************/
-
