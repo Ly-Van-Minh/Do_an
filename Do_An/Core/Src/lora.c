@@ -1447,7 +1447,7 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
 
     vModeInit(STDBY_MODE);          /* Init Module Lora into Standby Mode */
     ucData = ucSpi1Read(RegOpMode);
-    printf(" Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+    printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
 
     vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
     ucData = ucSpi1Read(RegFifoAddrPtr);
@@ -1460,9 +1460,9 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
             {
                 ucData = *(pcTxBuffer + i);
                 vSpi1Write(RegFifo, *(pcTxBuffer + i));
-                // ucData = ucSpi1Read(RegFifo);
-                // printf("Write Data into FiFo: RegFifo = 0x%XH\r\n", ucData);
             }
+            ucData = ucSpi1Read(RegIrqFlags);
+            printf("Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
 
             vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
             ucData = ucSpi1Read(RegOpMode);
@@ -1485,19 +1485,21 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
                 printf("Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
             }
 
+            /* Begin Read Data Transmit in FIFO */
             vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
             ucData = ucSpi1Read(RegFifoAddrPtr);
             printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
 
-            ucData = ucSpi1Read(RegFifo);
-            printf("Write Data into FiFo: RegFifo = 0x%XH\r\n", ucData);
-            ucData = ucSpi1Read(RegFifo);
-            printf("Write Data into FiFo: RegFifo = 0x%XH\r\n", ucData);
-            ucData = ucSpi1Read(RegFifo);
-            printf("Write Data into FiFo: RegFifo = 0x%XH\r\n", ucData);
+            ucData = ucSpi1Read(RegFifo);   /* Check Destination Address */
+            printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+            ucData = ucSpi1Read(RegFifo);   /* Check Source Address */
+            printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+            ucData = ucSpi1Read(RegFifo);   /* Check Led Status */
+            printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
+            /* End Read Data Transmit in FIFO */
 
             ucData = ucSpi1Read(RegIrqFlags);
-            printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+            printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
             vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u));  /* Clear TxDone Flag */
             ucData = ucSpi1Read(RegIrqFlags);
@@ -1510,11 +1512,9 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
         {
             ucData = *(pcTxBuffer + i);
             vSpi1Write(RegFifo, *(pcTxBuffer + i));
-            ucData = ucSpi1Read(RegFifo);
-            printf("Write Data into FiFo: RegFifo = 0x%XH\r\n", ucData);
         }
         ucData = ucSpi1Read(RegIrqFlags);
-        printf("Check PayloadCrcError Flag Before Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
+        printf("Check TxDone Flag Before Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
 
         vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
         ucData = ucSpi1Read(RegOpMode);
@@ -1536,8 +1536,22 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
         {
             printf("Automatic Mode change STANDBY from TX Single Mode\r\n");
         }
+
+        /* Begin Read Data Transmit in FIFO */
+        vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
+        ucData = ucSpi1Read(RegFifoAddrPtr);
+        printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
+        ucData = ucSpi1Read(RegFifo);   /* Check Destination Address */
+        printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+        ucData = ucSpi1Read(RegFifo);   /* Check Source Address */
+        printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+        ucData = ucSpi1Read(RegFifo);   /* Check Led Status */
+        printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
+        /* End Read Data Transmit in FIFO */
+
         ucData = ucSpi1Read(RegIrqFlags);
-        printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+        printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
         vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u));  /* Clear TxDone Flag */
         ucData = ucSpi1Read(RegIrqFlags);
@@ -1564,110 +1578,166 @@ void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
     uint8_t i = 0;
     uint8_t ucIrqStatus = 0;
     printf("****************** Start Receive ********************\r\n\r\n");
-    vModeInit(STDBY_MODE);          /* Init Module Lora into Standby Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
 
-    vSpi1Write(RegFifoAddrPtr , FIFO_RX_BASE_ADDR); /* Set FifoPtrAddr to FifoRxPtrBase */
+    /* Init Module Lora into Standby Mode */
+    vModeInit(STDBY_MODE);
+    ucData = ucSpi1Read(RegOpMode);
+    printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+    
+    /* Set FifoPtrAddr to FifoRxPtrBase */
+    vSpi1Write(RegFifoAddrPtr , FIFO_RX_BASE_ADDR);
     ucData = ucSpi1Read(RegFifoAddrPtr);
     printf("Set Read Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
 
-    if(ucRxMode == RX_CONTINUOUS)   /* If Rx Continuous Mode */
+    /* If Rx Continuous Mode */
+    if(ucRxMode == RX_CONTINUOUS)
     {
-        vModeInit(RXCONTINUOUS_MODE); /* Init Module Lora into RX Coninuous Mode */
+        /* Init Module Lora into RX Coninuous Mode */
+        vModeInit(RXCONTINUOUS_MODE); 
         ucData = ucSpi1Read(RegOpMode);
         printf("Init Rx Continuous Mode: RegOpMode = 0x%XH\r\n", ucData);
 
         while(1)
         {
-            ucIrqStatus = ucSpi1Read(RegIrqFlags);
-            printf("Check RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-            while((ucIrqStatus & 0x40u) == 0u);  /* Wait for RxDone set */
+            ucData = ucSpi1Read(RegIrqFlags);
+            printf("Check RxDone Flags Before: RegIrqFlags = 0x%XH\r\n", ucData);
+
+            /* Wait for RxDone set */
+            while((ucSpi1Read(RegIrqFlags) & 0x40u) == 0u);
 
             ucIrqStatus = ucSpi1Read(RegIrqFlags);
-            printf("Check PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+            printf("Check PayloadCrcError and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
             
-            if((ucIrqStatus & 0x20u) == 0)  /* If PayloadCrcError Flag not set */
+            /* If PayloadCrcError Flag not set and ValidHeader Flag set */
+            if(((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
             {
+                ucData = ucSpi1Read(RegFifoRxCurrentAddr);
+                vSpi1Write(RegFifoAddrPtr, ucData);
+
                 for(i = 0u; i < PAYLOAD_LENGHT; i++)
                 {
                     *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
-                    ucData = ucSpi1Read(RegFifo);
-                    printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData); 
+                    ucData = *(pcRxBuffer + i);
+                    printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
                 }
 
+                /* Clear RxDone Flag */
+                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
+                ucData = ucSpi1Read(RegIrqFlags);
+                printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+
+                /* Clear ValidHeader Flag */
+                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
+                ucData = ucSpi1Read(RegIrqFlags);
+                printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
             }
-            else    /* If PayloadCrcError Flag set */
+
+            /* If PayloadCrcError Flag set */
+            else
             {
+                printf("Data Receive Failed\r\n");
+
                 ucData = ucSpi1Read(RegIrqFlags);
                 printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);                
 
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));  /* Clear PayloadCrcError Flag */
+                /* Clear PayloadCrcError Flag */
+                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
                 ucData = ucSpi1Read(RegIrqFlags);
                 printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
             }
             printf("****************** Finish Receive ********************\r\n\r\n");
         }
     }
-    else    /* If Rx Single Module */
+
+    /* If Rx Single Module */
+    else
     {
-        vModeInit(RXSINGLE_MODE); /* Init Module Lora into RX Single Mode */
+        /* Init Module Lora into RX Single Mode */
+        vModeInit(RXSINGLE_MODE); 
         ucData = ucSpi1Read(RegOpMode);
         printf("Init Rx Single Mode: RegOpMode = 0x%XH\r\n", ucData);
 
-        while(((ucIrqStatus & 0x40u) | (ucIrqStatus & 0x80)) == 0u);  /* Wait for RxTimeout or RxDone Flag set */
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Check RxTimeout and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucData);
+
+        /* Wait for RxTimeout or RxDone Flag set */
+        while(((ucSpi1Read(RegIrqFlags) & 0x40u) | (ucSpi1Read(RegIrqFlags) & 0x80)) == 0u);
+
         ucIrqStatus = ucSpi1Read(RegIrqFlags);
         printf("Check RxTimeout or RxDone: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-        if((ucIrqStatus & 0x40u) != 0u) /* If RxDone Flag set */
+
+        /* If RxDone Flag set */
+        if((ucIrqStatus & 0x40u) != 0u) 
         {
             ucData = ucSpi1Read(RegOpMode);
             printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
-            if((ucData & 0x01u) != 0u)  /* If Automatic Mode change STANDBY */
+
+            /* If Automatic Mode change STANDBY */
+            if((ucData & 0x01u) != 0u)
             {
                 printf("Automatic Mode change STANBY from RX Single Mode\r\n");
 
                 ucIrqStatus = ucSpi1Read(RegIrqFlags);
                 printf("Check PlayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
-                if((ucIrqStatus & 0x20) == 0u)  /* If PlayloadCrcError Flag not set */
+                /* If PlayloadCrcError Flag not set and ValidHeader Flag set */
+                if(((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
                 {
+                    ucData = ucSpi1Read(RegFifoRxCurrentAddr);
+                    vSpi1Write(RegFifoAddrPtr, ucData);
                     for(i = 0u; i < PAYLOAD_LENGHT; i++)
                     {
                         *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
-                        ucData = ucSpi1Read(RegFifo);
+                        ucData = *(pcRxBuffer + i);
                         printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
                     }
                     ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Check RxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+                    printf("Check RxDone and ValidHeader Flags Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
-                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));  /* Clear RxDone Flag */
+                    vSpi1Write(RegFifoAddrPtr , FIFO_RX_BASE_ADDR);
+
+                    /* Clear ValidHeader Flag */
+                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
+                    ucData = ucSpi1Read(RegIrqFlags);
+                    printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+
+                    /* Clear RxDone Flag */
+                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
                     ucData = ucSpi1Read(RegIrqFlags);
                     printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
                 }
-                else    /* If PlayloadCrcError Flag set  */
+
+                /* If PlayloadCrcError Flag set  */
+                else
                 {
+                    /* Read Flags Status */
                     ucIrqStatus = ucSpi1Read(RegIrqFlags);
+                    printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
-                    ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));  /* Clear PayloadCrcError Flag */
+                    /* Clear PayloadCrcError Flag */
+                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
                     ucData = ucSpi1Read(RegIrqFlags);
                     printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
                 }
-                vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
+
+                /* Init Module Lora into Sleep Mode */
+                vModeInit(SLEEP_MODE);
                 ucData = ucSpi1Read(RegOpMode);
                 printf("Init Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
             }
-            else    /* If Automatic Mode chang STANBY fail */
+
+            /* If Automatic Mode chang STANBY fail */
+            else
             {
                 printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
             }
         }
-        else    /* If Rxtimeout Flag set */
+
+        /* If Rxtimeout Flag set */
+        else
         {
             ucData = ucSpi1Read(RegOpMode);
-            printf("Check RxTimeout: RegOpMode = 0x%XH\r\n", ucData);
+            printf("Check Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
             if((ucData & 0x01u) != 0u)
             {
                 printf("Automatic Mode change STANBY from RX Single Mode\r\n");
@@ -1675,11 +1745,14 @@ void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
                 ucData = ucSpi1Read(RegIrqFlags);
                 printf("Check Timeout Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x80u));  /* Clear Timeout Flag */
+                /* Clear Timeout Flag */
+                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x80u));
                 ucData = ucSpi1Read(RegIrqFlags);
                 printf("Clear Timeout Flag: RegIrqFlags = 0x%XH\r\n", ucData);
             }
-            else    /* If Automatic Mode chang STANBY fail */
+
+            /* If Automatic Mode chang STANBY fail */
+            else
             {
                 printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
             }

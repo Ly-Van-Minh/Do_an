@@ -56,6 +56,7 @@ extern uint16_t lightSensorAdcValue;
 USART_CLI_HandleTypedef_t uartCliHandle;
 
 uint8_t ucMatrix[PAYLOAD_LENGHT] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
+uint8_t ucMatrixReceive[PAYLOAD_LENGHT];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,9 +107,14 @@ int main(void)
 //  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
 //  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
 //  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
-  vLoraInit();
-  vLoraTransmit(ucMatrix, TX_CONTINOUS);
-  // vLoraReceive(ucMatrix, RX_CONTINUOUS);
+    vLoraInit();
+    vLoraTransmit(ucMatrix, TX_CONTINOUS); 
+    // vLoraTransmit(ucMatrix, TX_SINGLE);
+    // ucMatrix[0] = NODE2_ADDRESS;
+    // ucMatrix[1] = GATEWAY_ADDRESS;
+    // ucMatrix[2] = RELAY_OFF;
+    // vLoraTransmit(ucMatrix, TX_SINGLE);
+    // vLoraReceive(ucMatrixReceive, RX_CONTINUOUS);
   /* USER CODE END 2 */
 
   /* Infinite loop */
