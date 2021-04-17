@@ -239,7 +239,6 @@ void TIM4_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-  STM_LOGD(ISR_TAG, "");
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
@@ -253,6 +252,7 @@ __weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
   if (hadc->Instance == hadc1.Instance)
   {
     lightSensorAdcValue = HAL_ADC_GetValue(hadc);
+    STM_LOGI("ADC_READ", "lightSensor: %d", lightSensorAdcValue);
   }
 }
 
@@ -279,6 +279,7 @@ __weak void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     {
       uartCliHandle._rxIndex = 0;
       uartCliHandle._rxCpltFlag = 1;
+      printf("received");
     }
     /* Trigger to Receive and jump into ISR on each ISR process is necessary */
     HAL_UART_Receive_IT(huart, (uint8_t *)(&uartCliHandle._rxData), 1);
@@ -292,9 +293,8 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     static uint16_t millisSecond;
     static uint16_t blinkLedDelay;
-    millisSecond++;
-    blinkLedDelay++;
-    if (millisSecond == 70)
+    
+    if (++millisSecond == 70)
     {
       millisSecond = 0;
       if (uartCliHandle._rxCpltFlag == 1)
@@ -303,7 +303,9 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         runUserCmd(&uartCliHandle);
       }
     }
-    if(blinkLedDelay == 500){
+    
+    if (++blinkLedDelay == 500)
+    {
       blinkLedDelay = 0;
       TOGGLE_LED();
     }
