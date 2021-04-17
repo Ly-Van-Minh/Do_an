@@ -53,6 +53,7 @@ void MX_USART1_UART_Init(void)
   }
   /* USER CODE BEGIN USART1_Init 2 */
   RetargetInit(&huart1);
+  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
   /* USER CODE END USART1_Init 2 */
 
 }

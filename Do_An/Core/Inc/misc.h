@@ -3,6 +3,9 @@
 
 #include "main.h"
 #include "stm_log.h"
+
+#define WATCHDOG_TIME (10000u)
+
 typedef enum reset_cause
 {
     eRESET_CAUSE_UNKNOWN = 0,
@@ -20,6 +23,17 @@ typedef enum reset_cause
 #define PRESCALER_128_UPPER_LIMIT (13107u)
 #define PRESCALER_256_UPPER_LIMIT (26214u)
 #define IWDG_RESOLUTION (4095u)
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)       \
+    (byte & 0x80 ? '1' : '0'),     \
+        (byte & 0x40 ? '1' : '0'), \
+        (byte & 0x20 ? '1' : '0'), \
+        (byte & 0x10 ? '1' : '0'), \
+        (byte & 0x08 ? '1' : '0'), \
+        (byte & 0x04 ? '1' : '0'), \
+        (byte & 0x02 ? '1' : '0'), \
+        (byte & 0x01 ? '1' : '0')
 
 reset_cause_t resetCauseGet(void);
 const char *resetCauseGetName(reset_cause_t reset_cause);

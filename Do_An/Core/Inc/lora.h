@@ -14,43 +14,71 @@
 
 /* Define Long Range Mode*/
 #define LORA_MODE                   1u   /* LoRaTM Mode */
-#define FSK_OOK_MODE                0u   /* FSK/OOK Mode */
-/* Define Node Address */
-#define NODE1_ADDRESS               0x11u /* Address node 1 */
-#define NODE2_ADDRESS               0x22u /* Address node 2 */
-#define NODE3_ADDRESS               0x33u /* Address node 3 */
-#define GATEWAY_ADDRESS             0x44u /* Adress Gateway */
+// #define FSK_OOK_MODE                0u   /* FSK/OOK Mode */
 
-#define RELAY_ON                    0xAAu
-#define RELAY_OFF                   0xBBu
+/* Define Node Address */
+
 #define SPI1_READ                   0x7Fu
 #define SPI1_WRITE                  0x80u
 
-#define RX_SINGLE                   0u
-#define RX_CONTINUOUS               1u
-#define TX_SINGLE                   0u
-#define TX_CONTINOUS                1u
+#define LORA_GET_REGISTER(req)                                                                                   \
+    do                                                                                                           \
+    {                                                                                                            \
+        uint8_t ret = ucSpi1Read(req);                                                                           \
+        STM_LOGV("", "%s: 0x%.2x - " BYTE_TO_BINARY_PATTERN, #req, ucSpi1Read(ret), BYTE_TO_BINARY(ret)); \
+    } while (0)
 
-#define BANDWIDTH_7K8               0u
-#define BANDWIDTH_10K4              1u
-#define BANDWIDTH_15K6              2u
-#define BANDWIDTH_20K8              3u
-#define BANDWIDTH_31K25             4u
-#define BANDWIDTH_41K7              5u
-#define BANDWIDTH_62K5              6u
-#define BANDWIDTH_125K              7u
-#define BANDWIDTH_250K              8u
-#define BANDWIDTH_500K              9u
+enum LORASX127x_RX_MODE
+{
+    RX_SINGLE = 0u,
+    RX_CONTINUOUS = 1u,
+};
 
-#define CODING_RATE_4_5             1u
-#define CODING_RATE_4_6             2u
-#define CODING_RATE_4_7             3u
-#define CODING_RATE_4_8             4u
+enum LORASX127x_TX_MODE
+{
+    TX_SINGLE = 0u,
+    TX_CONTINOUS = 1u,
+};
+#define LORA_SYNC_WORD              0x12u
 
-#define EXPLICIT_HEADER             0u
-#define IMPLICIT_HEADER             1u
+enum LORASX127x_BANDWIDTH
+{
+    BANDWIDTH_7K8 = 0u,
+    BANDWIDTH_10K4 = 1u,
+    BANDWIDTH_15K6 = 2u,
+    BANDWIDTH_20K8 = 3u,
+    BANDWIDTH_31K25 = 4u,
+    BANDWIDTH_41K7 = 5u,
+    BANDWIDTH_62K5 = 6u,
+    BANDWIDTH_125K = 7u,
+    BANDWIDTH_250K = 8u,
+    BANDWIDTH_500K = 9u,
+};
 
-#define SPREADING_FACTOR_64         6u
+enum LORASX127x_CODING_RATE
+{
+    CODING_RATE_4_5 = 1u,
+    CODING_RATE_4_6 = 2u,
+    CODING_RATE_4_7 = 3u,
+    CODING_RATE_4_8 = 4u,
+};
+
+enum LORASX127x_HEADER_TYPE
+{
+    EXPLICIT_HEADER = 0u,
+    IMPLICIT_HEADER = 1u,
+};
+
+enum LORASX127x_SPREADING_FACTOR
+{
+    SPREADING_FACTOR_5 = 5u,
+    SPREADING_FACTOR_6 = 6u,
+    SPREADING_FACTOR_7 = 7u,
+    SPREADING_FACTOR_8 = 8u,
+    SPREADING_FACTOR_9 = 9u,
+    SPREADING_FACTOR_10 = 10u,
+};
+
 #define TX_NORMAL_MODE              0u
 #define CRC_ENABLE                  1u
 #define RX_TIMEOUT                  0x0064u
@@ -63,7 +91,6 @@
 #define LORA_DETECTION_OPTIMIZE     5u
 #define INVERT_IQ                   0u
 #define LORA_DETECTION_THRESHOLD    0x0Cu 
-#define LORA_SYNC_WORD              0x20u
 #define AGC_REFERENCE               0x19u
 #define AGC_STEP1                   0x0Cu
 #define AGC_STEP2                   0x04u

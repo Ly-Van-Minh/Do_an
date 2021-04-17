@@ -74,26 +74,26 @@ extern "C"
 
 /* USER CODE BEGIN Private defines */
 
-/* Define constants */
-#define WATCHDOG_TIME (10000u)
-#define LIGHTSENSOR_THRESHOLD (1000u)
+#define NODE1_ADDRESS               0x11u /* Address node 1 */
+#define NODE2_ADDRESS               0x22u /* Address node 2 */
+#define NODE3_ADDRESS               0x33u /* Address node 3 */
+#define GATEWAY_ADDRESS             0x44u /* Adress Gateway */
 
-/* Convert enumeration's value to string (debugging used only)*/
-#define WHICH_LIGHTSENSOR(lightSensorAdcValue) ((lightSensorAdcValue < LIGHTSENSOR_THRESHOLD) ? "ON" : "OFF")
+#define RELAY_ON                    0xAAu
+#define RELAY_OFF                   0xBBu
+
 #define WHICH_ERROR(err) (err == HAL_ERROR) ? "HAL_ERROR" : ((err == HAL_BUSY) ? "HAL_BUSY" : "HAL_TIMEOUT")
-
-/* Macro function */
 #define TOGGLE_LED() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
-#define READ_LORA_REGISTER(req) STM_LOGI("LORA_TAG", "%s: 0x%x", #req, ucSpi1Read(req))
 
-#define ERROR_CHECK(ret)                                        \
-  if (ret != HAL_OK)                                            \
-  {                                                             \
-    STM_LOGE("ERROR_CHECK_TAG", "[Error] %s", WHICH_ERROR(ret)) \
-  }
+#define ERROR_CHECK(ret)                                           \
+  do                                                               \
+  {                                                                \
+    if (ret != HAL_OK)                                             \
+    {                                                              \
+      STM_LOGE("ERROR_CHECK_TAG", "[Error] %s", WHICH_ERROR(ret)); \
+    }                                                              \
+  } while (0)
 
-/* Boolean statement */
-#define IS_LIGHT_ON(lightSensorAdcValue) ((lightSensorAdcValue < LIGHTSENSOR_THRESHOLD) ? true : false)
 
   /* USER CODE END Private defines */
 

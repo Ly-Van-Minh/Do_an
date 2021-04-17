@@ -23,15 +23,15 @@ extern SPI_HandleTypeDef hspi1;
 
 void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
 {
-    uint8_t ucDataMatrix[2];
-    ucAddress |= SPI1_WRITE; /* A wnr bit, which is 1 for write access and 0 for read access */
-    ucDataMatrix[0] = ucAddress;
-    ucDataMatrix[1] = ucData;
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
-    ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)ucDataMatrix, sizeof(ucDataMatrix), 100));
-    HAL_Delay(10);
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
+  uint8_t ucDataMatrix[2];
+  ucAddress |= SPI1_WRITE; /* A wnr bit, which is 1 for write access and 0 for read access */
+  ucDataMatrix[0] = ucAddress;
+  ucDataMatrix[1] = ucData;
+  HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
+  HAL_Delay(10);
+  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)ucDataMatrix, sizeof(ucDataMatrix), 100));
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -41,19 +41,19 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
   */
 uint8_t ucSpi1Read(uint8_t ucAddress)
 {
-    uint8_t ucData = 0;
-    ucAddress &= SPI1_READ; /* A wnr bit, which is 1 for write access and 0 for read access */
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
-    ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
-    ERROR_CHECK(HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
-    HAL_Delay(10);
-    HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
-    return ucData;
+  uint8_t ucData = 0;
+  ucAddress &= SPI1_READ; /* A wnr bit, which is 1 for write access and 0 for read access */
+  HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
+  HAL_Delay(10);
+  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
+  ERROR_CHECK(HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
+  HAL_Delay(10);
+  HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
+  return ucData;
 }
 
 // /**
-//   * @brief Read data of FIFO 
+//   * @brief Read data of FIFO
 //   * @param ucData: Value needed into FIFO
 //   * @retval Value of FIFO
 //   */
@@ -65,7 +65,7 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
 // }
 
 // /**
-//   * @brief Writre data into FIFO 
+//   * @brief Writre data into FIFO
 //   * @param ucData: Value needed write into FIFO
 //   * @retval None
 //   */
@@ -81,14 +81,14 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
   */
 void vLongRangeModeInit(uint8_t ucLongRangeMode)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOpMode);
-    ucData &= 0x7F;
-    if (ucLongRangeMode == 0u || ucLongRangeMode == 1u)
-    {
-        ucData |= (ucLongRangeMode << 7);
-        vSpi1Write(RegOpMode, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOpMode);
+  ucData &= 0x7F;
+  if (ucLongRangeMode == 0u || ucLongRangeMode == 1u)
+  {
+    ucData |= (ucLongRangeMode << 7);
+    vSpi1Write(RegOpMode, ucData);
+  }
 }
 
 /**
@@ -98,14 +98,14 @@ void vLongRangeModeInit(uint8_t ucLongRangeMode)
   */
 void vAccessSharedRegInit(uint8_t ucAccessSharedReg)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOpMode);
-    ucData &= 0xBF;
-    if (ucAccessSharedReg == 0u || ucAccessSharedReg == 1u)
-    {
-        ucData |= (ucAccessSharedReg << 6);
-        vSpi1Write(RegOpMode, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOpMode);
+  ucData &= 0xBF;
+  if (ucAccessSharedReg == 0u || ucAccessSharedReg == 1u)
+  {
+    ucData |= (ucAccessSharedReg << 6);
+    vSpi1Write(RegOpMode, ucData);
+  }
 }
 
 /**
@@ -115,14 +115,14 @@ void vAccessSharedRegInit(uint8_t ucAccessSharedReg)
   */
 void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOpMode);    
-    ucData &= 0xF7;
-    if (ucLowFrequencyModeOn == 0u || ucLowFrequencyModeOn == 1u)
-    {
-        ucData |= (ucLowFrequencyModeOn << 3);
-        vSpi1Write(RegOpMode, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOpMode);
+  ucData &= 0xF7;
+  if (ucLowFrequencyModeOn == 0u || ucLowFrequencyModeOn == 1u)
+  {
+    ucData |= (ucLowFrequencyModeOn << 3);
+    vSpi1Write(RegOpMode, ucData);
+  }
 }
 
 /**
@@ -132,14 +132,14 @@ void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn)
   */
 void vModeInit(uint8_t ucMode)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOpMode);
-    ucData &= 0xF8;
-    if (ucMode >= 0u && ucMode <= 7u)
-    {
-        ucData |= ucMode;
-        vSpi1Write(RegOpMode, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOpMode);
+  ucData &= 0xF8;
+  if (ucMode >= 0u && ucMode <= 7u)
+  {
+    ucData |= ucMode;
+    vSpi1Write(RegOpMode, ucData);
+  }
 }
 
 /**
@@ -149,9 +149,9 @@ void vModeInit(uint8_t ucMode)
   */
 void vFrfInit(unsigned int uiFrf)
 {
-    vSpi1Write(RegFrfMsb, (uint8_t)(uiFrf >> 16));
-    vSpi1Write(RegFrfMid, (uint8_t)(uiFrf >> 8));
-    vSpi1Write(RegFrfLsb, (uint8_t)uiFrf);
+  vSpi1Write(RegFrfMsb, (uint8_t)(uiFrf >> 16));
+  vSpi1Write(RegFrfMid, (uint8_t)(uiFrf >> 8));
+  vSpi1Write(RegFrfLsb, (uint8_t)uiFrf);
 }
 
 /**
@@ -161,14 +161,14 @@ void vFrfInit(unsigned int uiFrf)
   */
 void vPaSelectInit(uint8_t ucPaSelect)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPaConfig);
-    ucData &= 0x7F;
-    if (ucPaSelect == 0u || ucPaSelect == 1u)
-    {
-        ucData |= (ucPaSelect << 7);
-        vSpi1Write(RegPaConfig, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPaConfig);
+  ucData &= 0x7F;
+  if (ucPaSelect == 0u || ucPaSelect == 1u)
+  {
+    ucData |= (ucPaSelect << 7);
+    vSpi1Write(RegPaConfig, ucData);
+  }
 }
 
 /**
@@ -178,14 +178,14 @@ void vPaSelectInit(uint8_t ucPaSelect)
   */
 void vMaxPowerInit(uint8_t ucMaxPower)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPaConfig);
-    ucData &= 0x8F;
-    if (ucMaxPower >= 0u && ucMaxPower <= 7u)
-    {
-        ucData |= (ucMaxPower << 4);
-        vSpi1Write(RegPaConfig, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPaConfig);
+  ucData &= 0x8F;
+  if (ucMaxPower >= 0u && ucMaxPower <= 7u)
+  {
+    ucData |= (ucMaxPower << 4);
+    vSpi1Write(RegPaConfig, ucData);
+  }
 }
 
 /**
@@ -195,14 +195,14 @@ void vMaxPowerInit(uint8_t ucMaxPower)
   */
 void vOutputPowerInit(uint8_t ucOutputPower)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPaConfig);
-    ucData &= 0xF0;
-    if (ucOutputPower >= 0u && ucOutputPower <= 15u)
-    {
-        ucData |= ucOutputPower;
-        vSpi1Write(RegPaConfig, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPaConfig);
+  ucData &= 0xF0;
+  if (ucOutputPower >= 0u && ucOutputPower <= 15u)
+  {
+    ucData |= ucOutputPower;
+    vSpi1Write(RegPaConfig, ucData);
+  }
 }
 
 /**
@@ -212,14 +212,14 @@ void vOutputPowerInit(uint8_t ucOutputPower)
   */
 void vPaRampInit(uint8_t ucPaRamp)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPaRamp);
-    ucData &= 0xF0;
-    if (ucPaRamp >= 0u && ucPaRamp <= 15u)
-    {
-        ucData |= ucPaRamp;
-        vSpi1Write(RegPaRamp, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPaRamp);
+  ucData &= 0xF0;
+  if (ucPaRamp >= 0u && ucPaRamp <= 15u)
+  {
+    ucData |= ucPaRamp;
+    vSpi1Write(RegPaRamp, ucData);
+  }
 }
 
 /**
@@ -229,14 +229,14 @@ void vPaRampInit(uint8_t ucPaRamp)
   */
 void vOcpOnInit(uint8_t ucOcpOn)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOcp);
-    ucData &= 0xDF;
-    if (ucOcpOn == 0u || ucOcpOn == 1u)
-    {
-        ucData |= (ucOcpOn << 5);
-        vSpi1Write(RegOcp, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOcp);
+  ucData &= 0xDF;
+  if (ucOcpOn == 0u || ucOcpOn == 1u)
+  {
+    ucData |= (ucOcpOn << 5);
+    vSpi1Write(RegOcp, ucData);
+  }
 }
 
 /**
@@ -246,14 +246,14 @@ void vOcpOnInit(uint8_t ucOcpOn)
   */
 void vOcpTrimInit(uint8_t ucOcpTrim)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegOcp);
-    ucData &= 0xE0;
-    if (ucOcpTrim >= 0u && ucOcpTrim <= 31u)
-    {
-        ucData |= ucOcpTrim;
-        vSpi1Write(RegOcp, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegOcp);
+  ucData &= 0xE0;
+  if (ucOcpTrim >= 0u && ucOcpTrim <= 31u)
+  {
+    ucData |= ucOcpTrim;
+    vSpi1Write(RegOcp, ucData);
+  }
 }
 
 /**
@@ -263,14 +263,14 @@ void vOcpTrimInit(uint8_t ucOcpTrim)
   */
 void vLnaGainInit(uint8_t ucLnaGain)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegLna);
-    ucData &= 0x1F;
-    if (ucLnaGain >= 1u && ucLnaGain <= 6u)
-    {
-        ucData |= (ucLnaGain << 5);
-        vSpi1Write(RegLna, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegLna);
+  ucData &= 0x1F;
+  if (ucLnaGain >= 1u && ucLnaGain <= 6u)
+  {
+    ucData |= (ucLnaGain << 5);
+    vSpi1Write(RegLna, ucData);
+  }
 }
 
 /**
@@ -280,14 +280,14 @@ void vLnaGainInit(uint8_t ucLnaGain)
   */
 void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegLna);
-    ucData &= 0xE7;
-    if (ucLnaBoostLf == 0u)
-    {
-        ucData |= (ucLnaBoostLf << 3);
-        vSpi1Write(RegLna, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegLna);
+  ucData &= 0xE7;
+  if (ucLnaBoostLf == 0u)
+  {
+    ucData |= (ucLnaBoostLf << 3);
+    vSpi1Write(RegLna, ucData);
+  }
 }
 
 /**
@@ -297,14 +297,14 @@ void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
   */
 void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegLna);
-    ucData &= 0xFC;
-    if (ucLnaBoostHf == 0u || ucLnaBoostHf == 3u)
-    {
-        ucData |= ucLnaBoostHf;
-        vSpi1Write(RegLna, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegLna);
+  ucData &= 0xFC;
+  if (ucLnaBoostHf == 0u || ucLnaBoostHf == 3u)
+  {
+    ucData |= ucLnaBoostHf;
+    vSpi1Write(RegLna, ucData);
+  }
 }
 
 // /**
@@ -336,7 +336,7 @@ void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
   */
 void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr)
 {
-    vSpi1Write(RegFifoTxBaseAddr, ucFifoTxBaseAddr);
+  vSpi1Write(RegFifoTxBaseAddr, ucFifoTxBaseAddr);
 }
 
 /**
@@ -346,7 +346,7 @@ void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr)
   */
 void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr)
 {
-    vSpi1Write(RegFifoRxBaseAddr, ucFifoRxBaseAddr);
+  vSpi1Write(RegFifoRxBaseAddr, ucFifoRxBaseAddr);
 }
 
 /**
@@ -356,9 +356,9 @@ void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr)
   */
 uint8_t ucFifoRxCurrentAddrRead(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegFifoRxCurrentAddr);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegFifoRxCurrentAddr);
+  return ucData;
 }
 
 // void vRxTimeoutMaskInit(uint8_t ucRxTimeoutMask)
@@ -464,10 +464,10 @@ uint8_t ucFifoRxCurrentAddrRead(void)
   */
 void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegIrqFlagsMask);
-    ucData |= ucIrqFlagsMask;
-    vSpi1Write(RegIrqFlagsMask, ucData);
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegIrqFlagsMask);
+  ucData |= ucIrqFlagsMask;
+  vSpi1Write(RegIrqFlagsMask, ucData);
 }
 
 /**
@@ -477,9 +477,9 @@ void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask)
   */
 uint8_t ucIrqFlagsRead(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegIrqFlags);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegIrqFlags);
+  return ucData;
 }
 
 /**
@@ -489,10 +489,10 @@ uint8_t ucIrqFlagsRead(void)
   */
 void vIrqFlagsClear(uint8_t ucIrqFlags)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegIrqFlags);
-    ucData |= ucIrqFlags;
-    vSpi1Write(RegIrqFlags, ucData);
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegIrqFlags);
+  ucData |= ucIrqFlags;
+  vSpi1Write(RegIrqFlags, ucData);
 }
 
 /**
@@ -502,9 +502,9 @@ void vIrqFlagsClear(uint8_t ucIrqFlags)
   */
 uint8_t ucFifoRxBytesNbRead(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegRxNbBytes);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegRxNbBytes);
+  return ucData;
 }
 
 /**
@@ -514,10 +514,10 @@ uint8_t ucFifoRxBytesNbRead(void)
   */
 uint16_t usValidHeaderCntRead(void)
 {
-    uint16_t ucData = 0;
-    ucData = ((uint16_t)ucSpi1Read(RegRxHeaderCntValueMsb) << 8);
-    ucData |= (uint16_t)ucSpi1Read(RegRxHeaderCntValueLsb);
-    return ucData;
+  uint16_t ucData = 0;
+  ucData = ((uint16_t)ucSpi1Read(RegRxHeaderCntValueMsb) << 8);
+  ucData |= (uint16_t)ucSpi1Read(RegRxHeaderCntValueLsb);
+  return ucData;
 }
 
 /**
@@ -527,10 +527,10 @@ uint16_t usValidHeaderCntRead(void)
   */
 uint16_t usValidPacketCntRead(void)
 {
-    uint16_t ucData = 0;
-    ucData = ((uint16_t)ucSpi1Read(RegRxPacketCntValueMsb) << 8);
-    ucData |= (uint16_t)ucSpi1Read(RegRxPacketCntValueLsb);
-    return ucData;
+  uint16_t ucData = 0;
+  ucData = ((uint16_t)ucSpi1Read(RegRxPacketCntValueMsb) << 8);
+  ucData |= (uint16_t)ucSpi1Read(RegRxPacketCntValueLsb);
+  return ucData;
 }
 
 /**
@@ -540,9 +540,9 @@ uint16_t usValidPacketCntRead(void)
   */
 uint8_t ucRxCodingRateRead(void)
 {
-    uint8_t ucData;
-    ucData = (ucSpi1Read(RegModemStat) >> 5);
-    return ucData;
+  uint8_t ucData;
+  ucData = (ucSpi1Read(RegModemStat) >> 5);
+  return ucData;
 }
 
 /**
@@ -552,9 +552,9 @@ uint8_t ucRxCodingRateRead(void)
   */
 uint8_t ucModemStatusRead(void)
 {
-    uint8_t ucData;
-    ucData = 0x1F & ucSpi1Read(RegModemStat);
-    return ucData;
+  uint8_t ucData;
+  ucData = 0x1F & ucSpi1Read(RegModemStat);
+  return ucData;
 }
 
 /**
@@ -564,9 +564,9 @@ uint8_t ucModemStatusRead(void)
   */
 uint8_t ucPacketSnrRead(void)
 {
-    uint8_t ucData;
-    ucData = ucSpi1Read(RegPktSnrValue);
-    return ucData;
+  uint8_t ucData;
+  ucData = ucSpi1Read(RegPktSnrValue);
+  return ucData;
 }
 
 /**
@@ -576,9 +576,9 @@ uint8_t ucPacketSnrRead(void)
   */
 uint8_t ucPacketRssiRead(void)
 {
-    uint8_t ucData;
-    ucData = ucSpi1Read(RegPktRssiValue);
-    return ucData;
+  uint8_t ucData;
+  ucData = ucSpi1Read(RegPktRssiValue);
+  return ucData;
 }
 
 /**
@@ -588,9 +588,9 @@ uint8_t ucPacketRssiRead(void)
   */
 uint8_t ucRssiRead(void)
 {
-    uint8_t ucData;
-    ucData = ucSpi1Read(RegRssiValue);
-    return ucData;
+  uint8_t ucData;
+  ucData = ucSpi1Read(RegRssiValue);
+  return ucData;
 }
 
 /**
@@ -600,9 +600,9 @@ uint8_t ucRssiRead(void)
   */
 uint8_t ucPllTimeoutRead(void)
 {
-    uint8_t ucData;
-    ucData = (ucSpi1Read(RegHopChannel) >> 7);
-    return ucData;
+  uint8_t ucData;
+  ucData = (ucSpi1Read(RegHopChannel) >> 7);
+  return ucData;
 }
 
 /**
@@ -612,9 +612,9 @@ uint8_t ucPllTimeoutRead(void)
   */
 uint8_t ucCrcOnPayloadread(void)
 {
-    uint8_t ucData;
-    ucData = 0x01 & (ucSpi1Read(RegHopChannel) >> 6);
-    return ucData;
+  uint8_t ucData;
+  ucData = 0x01 & (ucSpi1Read(RegHopChannel) >> 6);
+  return ucData;
 }
 
 /**
@@ -624,9 +624,9 @@ uint8_t ucCrcOnPayloadread(void)
   */
 uint8_t ucFhssPresentChannelRead(void)
 {
-    uint8_t ucData;
-    ucData = 0x3F & ucSpi1Read(RegHopChannel);
-    return ucData;
+  uint8_t ucData;
+  ucData = 0x3F & ucSpi1Read(RegHopChannel);
+  return ucData;
 }
 
 /**
@@ -636,14 +636,14 @@ uint8_t ucFhssPresentChannelRead(void)
   */
 void vBandWidthInit(uint8_t ucBandWidth)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig1);
-    ucData &= 0x0F;
-    if (ucBandWidth >= 0u && ucBandWidth <= 9u)
-    {
-        ucData |= (ucBandWidth << 4);
-        vSpi1Write(RegModemConfig1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig1);
+  ucData &= 0x0F;
+  if (ucBandWidth >= 0u && ucBandWidth <= 9u)
+  {
+    ucData |= (ucBandWidth << 4);
+    vSpi1Write(RegModemConfig1, ucData);
+  }
 }
 
 /**
@@ -653,14 +653,14 @@ void vBandWidthInit(uint8_t ucBandWidth)
   */
 void vCodingRateInit(uint8_t ucCodingRate)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig1);
-    ucData &= 0xF1;
-    if (ucCodingRate >= 1u && ucCodingRate <= 4u)
-    {
-        ucData |= (ucCodingRate << 1);
-        vSpi1Write(RegModemConfig1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig1);
+  ucData &= 0xF1;
+  if (ucCodingRate >= 1u && ucCodingRate <= 4u)
+  {
+    ucData |= (ucCodingRate << 1);
+    vSpi1Write(RegModemConfig1, ucData);
+  }
 }
 
 /**
@@ -670,14 +670,14 @@ void vCodingRateInit(uint8_t ucCodingRate)
   */
 void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig1);
-    ucData &= 0xFE;
-    if (ucHeaderMode == 0u || ucHeaderMode == 1u)
-    {
-        ucData |= ucHeaderMode;
-        vSpi1Write(RegModemConfig1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig1);
+  ucData &= 0xFE;
+  if (ucHeaderMode == 0u || ucHeaderMode == 1u)
+  {
+    ucData |= ucHeaderMode;
+    vSpi1Write(RegModemConfig1, ucData);
+  }
 }
 
 /**
@@ -687,14 +687,14 @@ void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode)
   */
 void vSpreadingFactorInit(uint8_t ucSpreadingFactor)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig2);
-    ucData &= 0x0F;
-    if (ucSpreadingFactor >= 6u && ucSpreadingFactor <= 12u)
-    {
-        ucData |= (ucSpreadingFactor << 4);
-        vSpi1Write(RegModemConfig2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig2);
+  ucData &= 0x0F;
+  if (ucSpreadingFactor >= 6u && ucSpreadingFactor <= 12u)
+  {
+    ucData |= (ucSpreadingFactor << 4);
+    vSpi1Write(RegModemConfig2, ucData);
+  }
 }
 
 /**
@@ -704,14 +704,14 @@ void vSpreadingFactorInit(uint8_t ucSpreadingFactor)
   */
 void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig2);
-    ucData &= 0xF7;
-    if (ucTxContinuousMode == 0u || ucTxContinuousMode == 1u)
-    {
-        ucData |= (ucTxContinuousMode << 3);
-        vSpi1Write(RegModemConfig2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig2);
+  ucData &= 0xF7;
+  if (ucTxContinuousMode == 0u || ucTxContinuousMode == 1u)
+  {
+    ucData |= (ucTxContinuousMode << 3);
+    vSpi1Write(RegModemConfig2, ucData);
+  }
 }
 
 /**
@@ -721,14 +721,14 @@ void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
   */
 void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig2);
-    ucData &= 0xFB;
-    if (ucRxPayloadCrcOn == 0u || ucRxPayloadCrcOn == 1u)
-    {
-        ucData |= (ucRxPayloadCrcOn << 2);
-        vSpi1Write(RegModemConfig2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig2);
+  ucData &= 0xFB;
+  if (ucRxPayloadCrcOn == 0u || ucRxPayloadCrcOn == 1u)
+  {
+    ucData |= (ucRxPayloadCrcOn << 2);
+    vSpi1Write(RegModemConfig2, ucData);
+  }
 }
 
 /**
@@ -738,12 +738,12 @@ void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn)
   */
 void vSymbTimeoutInit(uint16_t ucSymbTimeout)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig2);
-    ucData &= 0xFC;
-    ucData |= ((0x03) & (uint8_t)(ucSymbTimeout >> 8));
-    vSpi1Write(RegModemConfig2, ucData);
-    vSpi1Write(RegSymbTimeoutLsb, (uint8_t)ucSymbTimeout);
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig2);
+  ucData &= 0xFC;
+  ucData |= ((0x03) & (uint8_t)(ucSymbTimeout >> 8));
+  vSpi1Write(RegModemConfig2, ucData);
+  vSpi1Write(RegSymbTimeoutLsb, (uint8_t)ucSymbTimeout);
 }
 
 /**
@@ -753,8 +753,8 @@ void vSymbTimeoutInit(uint16_t ucSymbTimeout)
   */
 void vPreambleLengthInit(uint16_t ucPreambleLength)
 {
-    vSpi1Write(RegPreambleMsb, (uint8_t)(ucPreambleLength >> 8));
-    vSpi1Write(RegPreambleLsb, (uint8_t)(ucPreambleLength));
+  vSpi1Write(RegPreambleMsb, (uint8_t)(ucPreambleLength >> 8));
+  vSpi1Write(RegPreambleLsb, (uint8_t)(ucPreambleLength));
 }
 
 /**
@@ -764,7 +764,7 @@ void vPreambleLengthInit(uint16_t ucPreambleLength)
   */
 void vPayloadLengthInit(uint8_t ucPayloadLength)
 {
-    vSpi1Write(RegPayloadLength, ucPayloadLength);
+  vSpi1Write(RegPayloadLength, ucPayloadLength);
 }
 
 /**
@@ -774,7 +774,7 @@ void vPayloadLengthInit(uint8_t ucPayloadLength)
   */
 void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength)
 {
-    vSpi1Write(RegMaxPayloadLength, ucPayloadMaxLength);
+  vSpi1Write(RegMaxPayloadLength, ucPayloadMaxLength);
 }
 
 /**
@@ -784,7 +784,7 @@ void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength)
   */
 void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod)
 {
-    vSpi1Write(RegHopPeriod, ucFreqHoppingPeriod);
+  vSpi1Write(RegHopPeriod, ucFreqHoppingPeriod);
 }
 
 /**
@@ -794,9 +794,9 @@ void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod)
   */
 uint8_t ucFifoRxByteAddrPtr(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegFifoRxByteAddr);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegFifoRxByteAddr);
+  return ucData;
 }
 
 /**
@@ -806,14 +806,14 @@ uint8_t ucFifoRxByteAddrPtr(void)
   */
 void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig3);
-    ucData &= 0xF7;
-    if (ucLowDataRateOptimize == 0u || ucLowDataRateOptimize == 1u)
-    {
-        ucData |= (ucLowDataRateOptimize << 3);
-        vSpi1Write(RegModemConfig3, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig3);
+  ucData &= 0xF7;
+  if (ucLowDataRateOptimize == 0u || ucLowDataRateOptimize == 1u)
+  {
+    ucData |= (ucLowDataRateOptimize << 3);
+    vSpi1Write(RegModemConfig3, ucData);
+  }
 }
 
 /**
@@ -823,14 +823,14 @@ void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize)
   */
 void vAgcAutoOnInit(uint8_t ucAgcAutoOn)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegModemConfig3);
-    ucData &= 0xFB;
-    if (ucAgcAutoOn == 0u || ucAgcAutoOn == 1u)
-    {
-        ucData |= (ucAgcAutoOn << 2);
-        vSpi1Write(RegModemConfig3, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegModemConfig3);
+  ucData &= 0xFB;
+  if (ucAgcAutoOn == 0u || ucAgcAutoOn == 1u)
+  {
+    ucData |= (ucAgcAutoOn << 2);
+    vSpi1Write(RegModemConfig3, ucData);
+  }
 }
 
 /**
@@ -840,11 +840,11 @@ void vAgcAutoOnInit(uint8_t ucAgcAutoOn)
   */
 unsigned int uiFreqError(void)
 {
-    unsigned int uiData = 0;
+  unsigned int uiData = 0;
     uiData |= (((unsigned int)(ucSpi1Read(RegFeiMsb) & 0x0F) << 16) | \
                ((unsigned int)ucSpi1Read(RegFeiMid) << 8) | \
                (unsigned int)ucSpi1Read(RegFeiLsb));
-    return uiData;
+  return uiData;
 }
 
 /**
@@ -854,9 +854,9 @@ unsigned int uiFreqError(void)
   */
 uint8_t ucRssiWidebandInit(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegRssiWideband);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegRssiWideband);
+  return ucData;
 }
 
 /**
@@ -866,14 +866,14 @@ uint8_t ucRssiWidebandInit(void)
   */
 void vDetectionOptimizeInit(uint8_t ucDetectionOptimize)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDetectOptimize);
-    ucData &= 0xF8;
-    if (ucDetectionOptimize == 3u || ucDetectionOptimize == 5u)
-    {
-        ucData |= ucDetectionOptimize;
-        vSpi1Write(RegDetectOptimize, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDetectOptimize);
+  ucData &= 0xF8;
+  if (ucDetectionOptimize == 3u || ucDetectionOptimize == 5u)
+  {
+    ucData |= ucDetectionOptimize;
+    vSpi1Write(RegDetectOptimize, ucData);
+  }
 }
 
 /**
@@ -883,14 +883,14 @@ void vDetectionOptimizeInit(uint8_t ucDetectionOptimize)
   */
 void vInvertIQInit(uint8_t ucInvertIQ)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegInvertIQ);
-    ucData &= 0xBF;
-    if (ucInvertIQ == 0u || ucInvertIQ == 1u)
-    {
-        ucData |= (ucInvertIQ << 6);
-        vSpi1Write(RegInvertIQ, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegInvertIQ);
+  ucData &= 0xBF;
+  if (ucInvertIQ == 0u || ucInvertIQ == 1u)
+  {
+    ucData |= (ucInvertIQ << 6);
+    vSpi1Write(RegInvertIQ, ucData);
+  }
 }
 
 /**
@@ -900,10 +900,10 @@ void vInvertIQInit(uint8_t ucInvertIQ)
   */
 void vDetectionThresholdInit(uint8_t ucDetectionThreshold)
 {
-    if (ucDetectionThreshold == 0x0A || ucDetectionThreshold == 0x0C)
-    {
-        vSpi1Write(RegDetectionThreshold, ucDetectionThreshold);
-    }
+  if (ucDetectionThreshold == 0x0A || ucDetectionThreshold == 0x0C)
+  {
+    vSpi1Write(RegDetectionThreshold, ucDetectionThreshold);
+  }
 }
 
 /**
@@ -913,7 +913,7 @@ void vDetectionThresholdInit(uint8_t ucDetectionThreshold)
   */
 void vSyncWordInit(uint8_t ucSyncWord)
 {
-    vSpi1Write(RegSyncWord, ucSyncWord);
+  vSpi1Write(RegSyncWord, ucSyncWord);
 }
 
 /**
@@ -923,14 +923,14 @@ void vSyncWordInit(uint8_t ucSyncWord)
   */
 void vDio0MappingInit(uint8_t ucDio0Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0x3F;
-    if (ucDio0Mapping >= 0u && ucDio0Mapping <= 3u)
-    {
-        ucData |= (ucDio0Mapping << 6);
-        vSpi1Write(RegDioMapping1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping1);
+  ucData &= 0x3F;
+  if (ucDio0Mapping >= 0u && ucDio0Mapping <= 3u)
+  {
+    ucData |= (ucDio0Mapping << 6);
+    vSpi1Write(RegDioMapping1, ucData);
+  }
 }
 
 /**
@@ -940,14 +940,14 @@ void vDio0MappingInit(uint8_t ucDio0Mapping)
   */
 void vDio1MappingInit(uint8_t ucDio1Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xCF;
-    if (ucDio1Mapping >= 0u && ucDio1Mapping <= 3u)
-    {
-        ucData |= (ucDio1Mapping << 4);
-        vSpi1Write(RegDioMapping1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping1);
+  ucData &= 0xCF;
+  if (ucDio1Mapping >= 0u && ucDio1Mapping <= 3u)
+  {
+    ucData |= (ucDio1Mapping << 4);
+    vSpi1Write(RegDioMapping1, ucData);
+  }
 }
 
 /**
@@ -957,14 +957,14 @@ void vDio1MappingInit(uint8_t ucDio1Mapping)
   */
 void vDio2MappingInit(uint8_t ucDio2Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xF3;
-    if (ucDio2Mapping >= 0u && ucDio2Mapping <= 3u)
-    {
-        ucData |= (ucDio2Mapping << 2);
-        vSpi1Write(RegDioMapping1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping1);
+  ucData &= 0xF3;
+  if (ucDio2Mapping >= 0u && ucDio2Mapping <= 3u)
+  {
+    ucData |= (ucDio2Mapping << 2);
+    vSpi1Write(RegDioMapping1, ucData);
+  }
 }
 
 /**
@@ -974,14 +974,14 @@ void vDio2MappingInit(uint8_t ucDio2Mapping)
   */
 void vDio3MappingInit(uint8_t ucDio3Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping1);
-    ucData &= 0xFC;
-    if (ucDio3Mapping >= 0u && ucDio3Mapping <= 3u)
-    {
-        ucData |= ucDio3Mapping;
-        vSpi1Write(RegDioMapping1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping1);
+  ucData &= 0xFC;
+  if (ucDio3Mapping >= 0u && ucDio3Mapping <= 3u)
+  {
+    ucData |= ucDio3Mapping;
+    vSpi1Write(RegDioMapping1, ucData);
+  }
 }
 
 /**
@@ -991,14 +991,14 @@ void vDio3MappingInit(uint8_t ucDio3Mapping)
   */
 void vDio4MappingInit(uint8_t ucDio4Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0x3F;
-    if (ucDio4Mapping >= 0u && ucDio4Mapping <= 3u)
-    {
-        ucData |= (ucDio4Mapping << 6);
-        vSpi1Write(RegDioMapping2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping2);
+  ucData &= 0x3F;
+  if (ucDio4Mapping >= 0u && ucDio4Mapping <= 3u)
+  {
+    ucData |= (ucDio4Mapping << 6);
+    vSpi1Write(RegDioMapping2, ucData);
+  }
 }
 
 /**
@@ -1008,14 +1008,14 @@ void vDio4MappingInit(uint8_t ucDio4Mapping)
   */
 void vDio5MappingInit(uint8_t ucDio5Mapping)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0xCF;
-    if (ucDio5Mapping >= 0u && ucDio5Mapping <= 3u)
-    {
-        ucData |= (ucDio5Mapping << 4);
-        vSpi1Write(RegDioMapping2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping2);
+  ucData &= 0xCF;
+  if (ucDio5Mapping >= 0u && ucDio5Mapping <= 3u)
+  {
+    ucData |= (ucDio5Mapping << 4);
+    vSpi1Write(RegDioMapping2, ucData);
+  }
 }
 
 /**
@@ -1026,14 +1026,14 @@ void vDio5MappingInit(uint8_t ucDio5Mapping)
   */
 void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegDioMapping2);
-    ucData &= 0xFE;
-    if (ucMapPreambleDetect == 0u || ucMapPreambleDetect == 1u)
-    {
-        ucData |= ucMapPreambleDetect;
-        vSpi1Write(RegDioMapping2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegDioMapping2);
+  ucData &= 0xFE;
+  if (ucMapPreambleDetect == 0u || ucMapPreambleDetect == 1u)
+  {
+    ucData |= ucMapPreambleDetect;
+    vSpi1Write(RegDioMapping2, ucData);
+  }
 }
 
 /**
@@ -1043,9 +1043,9 @@ void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect)
   */
 uint8_t ucVersionRead(void)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegVersion);
-    return ucData;
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegVersion);
+  return ucData;
 }
 
 /**
@@ -1055,14 +1055,14 @@ uint8_t ucVersionRead(void)
   */
 void vTcxoInputOnInit(uint8_t ucTcxoInputOn)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegTcxo);
-    ucData &= 0xEF;
-    if (ucTcxoInputOn == 0u || ucTcxoInputOn == 1u)
-    {
-        ucData |= (ucTcxoInputOn << 4);
-        vSpi1Write(RegTcxo, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegTcxo);
+  ucData &= 0xEF;
+  if (ucTcxoInputOn == 0u || ucTcxoInputOn == 1u)
+  {
+    ucData |= (ucTcxoInputOn << 4);
+    vSpi1Write(RegTcxo, ucData);
+  }
 }
 
 /**
@@ -1072,14 +1072,14 @@ void vTcxoInputOnInit(uint8_t ucTcxoInputOn)
   */
 void vPaDacInit(uint8_t ucPaDac)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPaDac);
-    ucData &= 0xF8;
-    if (ucPaDac == 4u || ucPaDac == 7u)
-    {
-        ucData |= ucPaDac;
-        vSpi1Write(RegPaDac, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPaDac);
+  ucData &= 0xF8;
+  if (ucPaDac == 4u || ucPaDac == 7u)
+  {
+    ucData |= ucPaDac;
+    vSpi1Write(RegPaDac, ucData);
+  }
 }
 
 /**
@@ -1090,7 +1090,7 @@ void vPaDacInit(uint8_t ucPaDac)
   */
 void vFormerTempInit(uint8_t ucFormerTemp)
 {
-    vSpi1Write(RegFormerTemp, ucFormerTemp);
+  vSpi1Write(RegFormerTemp, ucFormerTemp);
 }
 
 /**
@@ -1100,14 +1100,14 @@ void vFormerTempInit(uint8_t ucFormerTemp)
   */
 void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcRef);
-    ucData &= 0xC0;
-    if (ucAgcReferenceLevel >= 0x00 && ucAgcReferenceLevel <= 0x3F)
-    {
-        ucData |= ucAgcReferenceLevel;
-        vSpi1Write(RegAgcRef, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcRef);
+  ucData &= 0xC0;
+  if (ucAgcReferenceLevel >= 0x00 && ucAgcReferenceLevel <= 0x3F)
+  {
+    ucData |= ucAgcReferenceLevel;
+    vSpi1Write(RegAgcRef, ucData);
+  }
 }
 
 /**
@@ -1117,14 +1117,14 @@ void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel)
   */
 void vAgcStep1Init(uint8_t ucAgcStep1)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcThresh1);
-    ucData &= 0xE0;
-    if (ucAgcStep1 >= 0x00 && ucAgcStep1 <= 0x1F)
-    {
-        ucData |= ucAgcStep1;
-        vSpi1Write(RegAgcThresh1, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcThresh1);
+  ucData &= 0xE0;
+  if (ucAgcStep1 >= 0x00 && ucAgcStep1 <= 0x1F)
+  {
+    ucData |= ucAgcStep1;
+    vSpi1Write(RegAgcThresh1, ucData);
+  }
 }
 
 /**
@@ -1134,14 +1134,14 @@ void vAgcStep1Init(uint8_t ucAgcStep1)
   */
 void vAgcStep2Init(uint8_t ucAgcStep2)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcThresh2);
-    ucData &= 0x0F;
-    if (ucAgcStep2 >= 0x00 && ucAgcStep2 <= 0x0F)
-    {
-        ucData |= (ucAgcStep2 << 4);
-        vSpi1Write(RegAgcThresh2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcThresh2);
+  ucData &= 0x0F;
+  if (ucAgcStep2 >= 0x00 && ucAgcStep2 <= 0x0F)
+  {
+    ucData |= (ucAgcStep2 << 4);
+    vSpi1Write(RegAgcThresh2, ucData);
+  }
 }
 
 /**
@@ -1151,14 +1151,14 @@ void vAgcStep2Init(uint8_t ucAgcStep2)
   */
 void vAgcStep3Init(uint8_t ucAgcStep3)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcThresh2);
-    ucData &= 0xF0;
-    if (ucAgcStep3 >= 0x00 && ucAgcStep3 <= 0x0F)
-    {
-        ucData |= ucAgcStep3;
-        vSpi1Write(RegAgcThresh2, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcThresh2);
+  ucData &= 0xF0;
+  if (ucAgcStep3 >= 0x00 && ucAgcStep3 <= 0x0F)
+  {
+    ucData |= ucAgcStep3;
+    vSpi1Write(RegAgcThresh2, ucData);
+  }
 }
 
 /**
@@ -1168,14 +1168,14 @@ void vAgcStep3Init(uint8_t ucAgcStep3)
   */
 void vAgcStep4Init(uint8_t ucAgcStep4)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcThresh3);
-    ucData &= 0x0F;
-    if (ucAgcStep4 >= 0x00 && ucAgcStep4 <= 0x0F)
-    {
-        ucData |= (ucAgcStep4 << 4);
-        vSpi1Write(RegAgcThresh3, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcThresh3);
+  ucData &= 0x0F;
+  if (ucAgcStep4 >= 0x00 && ucAgcStep4 <= 0x0F)
+  {
+    ucData |= (ucAgcStep4 << 4);
+    vSpi1Write(RegAgcThresh3, ucData);
+  }
 }
 
 /**
@@ -1185,14 +1185,14 @@ void vAgcStep4Init(uint8_t ucAgcStep4)
   */
 void vAgcStep5Init(uint8_t ucAgcStep5)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegAgcThresh3);
-    ucData &= 0xF0;
-    if (ucAgcStep5 >= 0x00 && ucAgcStep5 <= 0x0F)
-    {
-        ucData |= ucAgcStep5;
-        vSpi1Write(RegAgcThresh3, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegAgcThresh3);
+  ucData &= 0xF0;
+  if (ucAgcStep5 >= 0x00 && ucAgcStep5 <= 0x0F)
+  {
+    ucData |= ucAgcStep5;
+    vSpi1Write(RegAgcThresh3, ucData);
+  }
 }
 
 /**
@@ -1202,14 +1202,14 @@ void vAgcStep5Init(uint8_t ucAgcStep5)
   */
 void vPllBandwidth(uint8_t ucPllBandwidth)
 {
-    uint8_t ucData = 0;
-    ucData = ucSpi1Read(RegPll);
-    ucData &= 0x3F;
-    if (ucPllBandwidth >= 0u && ucPllBandwidth <= 3u)
-    {
-        ucData |= (ucPllBandwidth << 6);
-        vSpi1Write(RegPll, ucData);
-    }
+  uint8_t ucData = 0;
+  ucData = ucSpi1Read(RegPll);
+  ucData &= 0x3F;
+  if (ucPllBandwidth >= 0u && ucPllBandwidth <= 3u)
+  {
+    ucData |= (ucPllBandwidth << 6);
+    vSpi1Write(RegPll, ucData);
+  }
 }
 
 /**
@@ -1219,216 +1219,157 @@ void vPllBandwidth(uint8_t ucPllBandwidth)
   */
 void vLoraInit(void)
 {
-    uint8_t ucData = 0;
-    vModeInit(SLEEP_MODE);          /* Init Module Lora into Sleep Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  STM_LOGD("lora.c", "---------- LoraInit Start ----------");
 
-    vLongRangeModeInit(LORA_MODE);  /* Init Module Lora into Lora TM Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
+  LORA_GET_REGISTER(RegOpMode);
 
-    vModeInit(STDBY_MODE);          /* Init Module Lora into Standby Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  vLongRangeModeInit(LORA_MODE); /* Init Module Lora into Lora TM Mode */
+  LORA_GET_REGISTER(RegOpMode);
 
-    vAccessSharedRegInit(ACCESS_LORA_REGISTERS);    /* Access LoRa registers page 0x0D: 0x3F */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
+  LORA_GET_REGISTER(RegOpMode);
 
-    vLowFrequencyModeOnInit(ACCESS_LOW_FREQUENCY_MODE);     /* Access Low Frequency Mode registers */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  vAccessSharedRegInit(ACCESS_LORA_REGISTERS); /* Access LoRa registers page 0x0D: 0x3F */
+  LORA_GET_REGISTER(RegOpMode);
 
-    vFrfInit(RF_FREQUENCY);         /* Init RF carrier frequency */
-    ucData = ucSpi1Read(RegFrfMsb);
-    printf("RegFrfMsb = 0x%XH\r\n", ucData);
+  vLowFrequencyModeOnInit(ACCESS_LOW_FREQUENCY_MODE); /* Access Low Frequency Mode registers */
+  LORA_GET_REGISTER(RegOpMode);
 
-    ucData = ucSpi1Read(RegFrfMid);
-    printf("RegFrfMid = 0x%XH\r\n", ucData);
+  vFrfInit(RF_FREQUENCY); /* Init RF carrier frequency */
+  LORA_GET_REGISTER(RegFrfMsb);
+  LORA_GET_REGISTER(RegFrfMid);
+  LORA_GET_REGISTER(RegFrfLsb);
 
-    ucData = ucSpi1Read(RegFrfLsb);
-    printf("RegFrfLsb = 0x%XH\r\n", ucData);
+  vPaSelectInit(PA_BOOST); /* Output power is limited to +20 dBm */
+  LORA_GET_REGISTER(RegPaConfig);
 
-    vPaSelectInit(PA_BOOST);        /* Output power is limited to +20 dBm */
-    ucData = ucSpi1Read(RegPaConfig);
-    printf("RegPaConfig = 0x%XH\r\n", ucData);
+  vMaxPowerInit(MAX_POWER);
+  LORA_GET_REGISTER(RegPaConfig);
 
-    vMaxPowerInit(MAX_POWER);
-    ucData = ucSpi1Read(RegPaConfig);
-    printf("RegPaConfig = 0x%XH\r\n", ucData); 
+  vOutputPowerInit(OUTPUT_POWER); /* Pout=17-(15-OutputPower) */
+  LORA_GET_REGISTER(RegPaConfig);
 
-    vOutputPowerInit(OUTPUT_POWER); /* Pout=17-(15-OutputPower) */
-    ucData = ucSpi1Read(RegPaConfig);
-    printf("RegPaConfig = 0x%XH\r\n", ucData);   
+  vPaRampInit(PA_RAMP);
+  LORA_GET_REGISTER(RegPaRamp);
 
-    vPaRampInit(PA_RAMP);
-    ucData = ucSpi1Read(RegPaRamp);
-    printf("RegPaRamp = 0x%XH\r\n", ucData);
+  vOcpOnInit(OCP_ON); /* OCP enabled */
+  LORA_GET_REGISTER(RegOcp);
 
-    vOcpOnInit(OCP_ON);             /* OCP enabled */
-    ucData = ucSpi1Read(RegOcp);
-    printf("RegOcp = 0x%XH\r\n", ucData);
+  vOcpTrimInit(OCP_TRIM); /* Trimming of OCP current: Imax = 240mA */
+  LORA_GET_REGISTER(RegOcp);
 
-    vOcpTrimInit(OCP_TRIM);         /* Trimming of OCP current: Imax = 240mA */
-    ucData = ucSpi1Read(RegOcp);
-    printf("RegOcp = 0x%XH\r\n", ucData);
+  vLnaGainInit(G1); /* LNA gain setting: G1 = maximum gain */
+  LORA_GET_REGISTER(RegLna);
 
-    vLnaGainInit(G1);               /* LNA gain setting: G1 = maximum gain */
-    ucData = ucSpi1Read(RegLna);
-    printf("RegLna = 0x%XH\r\n", ucData);
+  vLnaBoostLfInit(LNA_BOOST_LF); /* Low Frequency (RFI_LF) LNA current adjustment Default LNA current */
+  LORA_GET_REGISTER(RegLna);
 
-    vLnaBoostLfInit(LNA_BOOST_LF);  /* Low Frequency (RFI_LF) LNA current 
-                                       adjustment Default LNA current */
-    ucData = ucSpi1Read(RegLna);
-    printf("RegLna = 0x%XH\r\n", ucData);
+  vLnaBoostHfInit(LNA_BOOST_HF); /* High Frequency (RFI_HF) LNA current adjustment Boost on, 150% LNA current */
+  LORA_GET_REGISTER(RegLna);
 
-    vLnaBoostHfInit(LNA_BOOST_HF);  /* High Frequency (RFI_HF) LNA current 
-                                       adjustment Boost on, 150% LNA current */
-    ucData = ucSpi1Read(RegLna);
-    printf("RegLna = 0x%XH\r\n", ucData);
+  vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* Write base address in FIFO data buffer for TX modulator */
+  LORA_GET_REGISTER(RegFifoTxBaseAddr);
 
-    vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* Write base address in FIFO data 
-                                               buffer for TX modulator */
-    ucData = ucSpi1Read(RegFifoTxBaseAddr);
-    printf("RegFifoTxBaseAddr = 0x%XH\r\n", ucData);
+  vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* Read base address in FIFO data buffer for RX demodulator */
+  LORA_GET_REGISTER(RegFifoRxBaseAddr);
 
-    vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* Read base address in FIFO data 
-                                               buffer for RX demodulator */
-    ucData = ucSpi1Read(RegFifoRxBaseAddr);
-    printf("RegFifoRxBaseAddr = 0x%XH\r\n", ucData);
+  vIrqFlagsMaskInit(IRQ_FLAGS_MASK); /* Disable all interrupts mask */
+  LORA_GET_REGISTER(RegIrqFlagsMask);
 
-    vIrqFlagsMaskInit(IRQ_FLAGS_MASK);  /* Disable all interrupts mask */
-    ucData = ucSpi1Read(RegIrqFlagsMask);
-    printf("RegIrqFlagsMask = 0x%XH\r\n", ucData);
+  vBandWidthInit(BANDWIDTH_125K); /* Signal bandwidth: 250kHz */
+  LORA_GET_REGISTER(RegModemConfig1);
 
-    vBandWidthInit(BANDWIDTH_125K);     /* Signal bandwidth: 250kHz */
-    ucData = ucSpi1Read(RegModemConfig1);
-    printf("RegModemConfig1 = 0x%XH\r\n", ucData);
+  vCodingRateInit(CODING_RATE_4_5); /* Error coding rate 4/5 */
+  LORA_GET_REGISTER(RegModemConfig1);
 
-    vCodingRateInit(CODING_RATE_4_5);   /* Error coding rate 4/5 */
-    ucData = ucSpi1Read(RegModemConfig1);
-    printf("RegModemConfig1 = 0x%XH\r\n", ucData);
+  vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* Init Implicit Header mode */
+  LORA_GET_REGISTER(RegModemConfig1);
 
-    vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* Init Implicit Header mode */
-    ucData = ucSpi1Read(RegModemConfig1);
-    printf("RegModemConfig1 = 0x%XH\r\n", ucData);
+  vSpreadingFactorInit(SPREADING_FACTOR_6); /* SF rate 64 chips / symbol */
+  LORA_GET_REGISTER(RegModemConfig2);
 
-    vSpreadingFactorInit(SPREADING_FACTOR_64); /* SF rate 64 chips / symbol */
-    ucData = ucSpi1Read(RegModemConfig2);
-    printf("RegModemConfig2 = 0x%XH\r\n", ucData);
+  vTxContinuousModeInit(TX_NORMAL_MODE); /* Normal mode, a single packet is sent */
+  LORA_GET_REGISTER(RegModemConfig2);
 
-    vTxContinuousModeInit(TX_NORMAL_MODE);  /* Normal mode, a single packet is sent */
-    ucData = ucSpi1Read(RegModemConfig2);
-    printf("RegModemConfig2 = 0x%XH\r\n", ucData);
+  vRxPayloadCrcOnInit(CRC_ENABLE); /* Enable CRC generation and check on payload */
+  LORA_GET_REGISTER(RegModemConfig2);
 
-    vRxPayloadCrcOnInit(CRC_ENABLE);        /* Enable CRC generation and check on payload */
-    ucData = ucSpi1Read(RegModemConfig2);
-    printf("RegModemConfig2 = 0x%XH\r\n", ucData);
+  vSymbTimeoutInit(RX_TIMEOUT); /* RX operation time-out */
+  LORA_GET_REGISTER(RegModemConfig2);
+  LORA_GET_REGISTER(RegSymbTimeoutLsb);
 
-    vSymbTimeoutInit(RX_TIMEOUT);           /* RX operation time-out */
-    ucData = ucSpi1Read(RegModemConfig2);
-    printf("RegModemConfig2 = 0x%XH\r\n", ucData);
-    ucData = ucSpi1Read(RegSymbTimeoutLsb);
-    printf("RegSymbTimeoutLsb = 0x%XH\r\n", ucData);
+  vPreambleLengthInit(PREAMBLE_LENGTH); /* Preamble length  = PreambleLength + 4.25 Symbols */
+  LORA_GET_REGISTER(RegPreambleMsb);
 
-    vPreambleLengthInit(PREAMBLE_LENGTH);   /* Preamble length  = PreambleLength + 4.25 Symbols */
-    ucData = ucSpi1Read(RegPreambleMsb);
-    printf("RegPreambleMsb = 0x%XH\r\n", ucData);
-    ucData = ucSpi1Read(RegPreambleLsb);
-    printf("RegPreambleLsb = 0x%XH\r\n", ucData);
+  LORA_GET_REGISTER(RegPreambleLsb);
 
-    vPayloadLengthInit(PAYLOAD_LENGHT);     /* Init Payload length */
-    ucData = ucSpi1Read(RegPayloadLength);
-    printf("RegPayloadLength = 0x%XH\r\n", ucData);
+  vPayloadLengthInit(PAYLOAD_LENGHT); /* Init Payload length */
+  LORA_GET_REGISTER(RegPayloadLength);
 
-    vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH);  /* Maximum payload length */
-    ucData = ucSpi1Read(RegMaxPayloadLength);
-    printf("RegMaxPayloadLength = 0x%XH\r\n", ucData); 
-    
-    vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD);    /* Symbol periods between frequency hops */
-    ucData = ucSpi1Read(RegHopPeriod);  
-    printf("RegHopPeriod = 0x%XH\r\n", ucData);
-    
-    vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the 
-                                                    symbol length exceeds16ms */
-    ucData = ucSpi1Read(RegModemConfig3);
-    printf("RegModemConfig3 = 0x%XH\r\n", ucData);
+  vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH); /* Maximum payload length */
+  LORA_GET_REGISTER(RegMaxPayloadLength);
 
-    vAgcAutoOnInit(AGC_AUTO) ;   /* 0 -> LNA gain set by register LnaGain
-                                    1 -> LNA gain set by the internal AGC loop*/
-    ucData = ucSpi1Read(RegModemConfig3);
-    printf("RegModemConfig3 = 0x%XH\r\n", ucData);
+  vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD); /* Symbol periods between frequency hops */
+  LORA_GET_REGISTER(RegHopPeriod);
 
-    vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE);   /* LoRa Detection Optimize 0x03 -> 
-                                                       SF7 to SF12; 0x05 -> SF6 */
-    ucData = ucSpi1Read(RegDetectOptimize);
-    printf("RegDetectOptimize = 0x%XH\r\n", ucData);
+  vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the symbol length exceeds16ms */
+  LORA_GET_REGISTER(RegModemConfig3);
 
-    vInvertIQInit(INVERT_IQ);   /* Invert the LoRa I and Q signals */
-    ucData = ucSpi1Read(RegInvertIQ);
-    printf("RegInvertIQ = 0x%XH\r\n", ucData);
+  vAgcAutoOnInit(AGC_AUTO); /* 0 -> LNA gain set by register LnaGain 1 -> LNA gain set by the internal AGC loop*/
+  LORA_GET_REGISTER(RegModemConfig3);
 
-    vDetectionThresholdInit(LORA_DETECTION_THRESHOLD); /* LoRa detection threshold 0x0A 
-                                                            -> SF7 to SF12; 0x0C -> SF6 */
-    ucData = ucSpi1Read(RegDetectionThreshold);
-    printf("RegDetectionThreshold = 0x%XH\r\n", ucData);
+  vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE); /* LoRa Detection Optimize 0x03 -> SF7 to SF12; 0x05 -> SF6 */
+  LORA_GET_REGISTER(RegDetectOptimize);
 
-    vSyncWordInit(LORA_SYNC_WORD);          /* Init Sync Word */
-    ucData = ucSpi1Read(RegSyncWord);
-    printf("RegSyncWord = 0x%XH\r\n", ucData);
+  vInvertIQInit(INVERT_IQ); /* Invert the LoRa I and Q signals */
+  LORA_GET_REGISTER(RegInvertIQ);
+  LORA_GET_REGISTER(RegInvertIQ);
 
-    vAgcReferenceLevelInit(AGC_REFERENCE);  /* Sets the floor reference for all AGC thresholds */
-    ucData = ucSpi1Read(RegAgcRef);
-    printf("RegAgcRef = 0x%XH\r\n", ucData);
+  vDetectionThresholdInit(LORA_DETECTION_THRESHOLD); /* LoRa detection threshold 0x0A -> SF7 to SF12; 0x0C -> SF6 */
+  LORA_GET_REGISTER(RegDetectionThreshold);
 
-    vAgcStep1Init(AGC_STEP1);   /* Defines the 1st AGC Threshold */
-    ucData = ucSpi1Read(RegAgcThresh1);
-    printf("RegAgcThresh1 = 0x%XH\r\n", ucData);
+  vSyncWordInit(LORA_SYNC_WORD); /* Init Sync Word */
+  LORA_GET_REGISTER(RegSyncWord);
 
-    vAgcStep2Init(AGC_STEP2);   /* Defines the 2nd AGC Threshold */
-    ucData = ucSpi1Read(RegAgcThresh2);
-    printf("RegAgcThresh2 = 0x%XH\r\n", ucData);
+  vAgcReferenceLevelInit(AGC_REFERENCE); /* Sets the floor reference for all AGC thresholds */
+  LORA_GET_REGISTER(RegAgcRef);
 
-    vAgcStep3Init(AGC_STEP3);   /* Defines the 3rd AGC Threshold */
-    ucData = ucSpi1Read(RegAgcThresh2);
-    printf("RegAgcThresh2 = 0x%XH\r\n", ucData);
+  vAgcStep1Init(AGC_STEP1); /* Defines the 1st AGC Threshold */
+  LORA_GET_REGISTER(RegAgcRef);
 
-    vAgcStep4Init(AGC_STEP4);   /* Defines the 4th AGC Threshold */
-    ucData = ucSpi1Read(RegAgcThresh3);
-    printf("RegAgcThresh3 = 0x%XH\r\n", ucData);
+  vAgcStep2Init(AGC_STEP2); /* Defines the 2nd AGC Threshold */
+  LORA_GET_REGISTER(RegAgcThresh2);
 
-    vAgcStep5Init(AGC_STEP5);   /* Defines the 5th AGC Threshold */
-    ucData = ucSpi1Read(RegAgcThresh3);
-    printf("RegAgcThresh3 = 0x%XH\r\n", ucData);
+  vAgcStep3Init(AGC_STEP3); /* Defines the 3rd AGC Threshold */
+  LORA_GET_REGISTER(RegAgcThresh2);
 
-    vPllBandwidth(PLL_BANDWIDTH);   /* Controls the PLL bandwidth */
-    ucData = ucSpi1Read(RegPll);
-    printf("RegPll = 0x%XH\r\n", ucData);
+  vAgcStep4Init(AGC_STEP4); /* Defines the 4th AGC Threshold */
+  LORA_GET_REGISTER(RegAgcThresh3);
 
-    vDio0MappingInit(CAD_DONE);
-    ucData = ucSpi1Read(RegDioMapping1);
-    printf("RegDioMapping1 = 0x%XH\r\n", ucData);
-    // vMapPreambleDetect(PREAMBBLE_DETECT_INTERRUPT);
-    // ucData = ucSpi1Read(RegTcxo);
-    // printf("RegTcxo = 0x%XH\r\n", ucData);
+  vAgcStep5Init(AGC_STEP5); /* Defines the 5th AGC Threshold */
+  LORA_GET_REGISTER(RegAgcThresh3);
 
-    vTcxoInputOnInit(TCXO_INPUT);   /* Controls the crystal oscillator */
-    ucData = ucSpi1Read(RegTcxo);
-    printf("RegTcxo = 0x%XH\r\n", ucData);
+  vPllBandwidth(PLL_BANDWIDTH); /* Controls the PLL bandwidth */
+  LORA_GET_REGISTER(RegPll);
 
-    vPaDacInit(PA_DAC); /* Enables the +20dBm option on PA_BOOST pin */
-    ucData = ucSpi1Read(RegPaDac);
-    printf("RegPaDac = 0x%XH\r\n", ucData);
-    
-    ucData = ucSpi1Read(RegLna);
-    printf("RegLna = 0x%XH\r\n", ucData);
+  vDio0MappingInit(CAD_DONE);
+  LORA_GET_REGISTER(RegDioMapping1);
 
-    ucData = ucVersionRead();
-    printf("RegVersion = 0x%XH\r\n", ucData);
+  // vMapPreambleDetect(PREAMBBLE_DETECT_INTERRUPT);
+  // LORA_GET_REGISTER(RegTcxo);
+  // printf("RegTcxo = 0x%XH\r\n", ucData);
 
-    ucData = ucSpi1Read(RegOpMode);
-    printf("RegOpMode = 0x%XH\r\n", ucData);
+  vTcxoInputOnInit(TCXO_INPUT); /* Controls the crystal oscillator */
+  LORA_GET_REGISTER(RegTcxo);
+
+  vPaDacInit(PA_DAC); /* Enables the +20dBm option on PA_BOOST pin */
+  LORA_GET_REGISTER(RegPaDac);
+  LORA_GET_REGISTER(RegLna);
+  LORA_GET_REGISTER(RegVersion);
+  LORA_GET_REGISTER(RegOpMode);
+
+  STM_LOGD("lora.c", "---------- LoraInit Finish ----------");
 }
 
 /**
@@ -1437,133 +1378,135 @@ void vLoraInit(void)
   * @param ucTxMode: Transmit Mode: Tx Single or Rx Coninuous
   * @retval None
   */
-void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
+void vLoraTransmit(uint8_t *pcTxBuffer, uint8_t ucTxMode)
 {
-    uint8_t ucData = 0;
-    uint8_t i = 0;
-    uint8_t ucIrqStatus = 0;
+  uint8_t ucData = 0;
+  uint8_t i = 0;
+  uint8_t ucIrqStatus = 0;
 
-    printf("****************** Start Transmit ********************\r\n\r\n");
+  STM_LOGD("lora.c", "---------- Start Transmit ----------");
 
-    vModeInit(STDBY_MODE);          /* Init Module Lora into Standby Mode */
+  vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
+  ucData = ucSpi1Read(RegOpMode);
+  printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+
+  vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
+  ucData = ucSpi1Read(RegFifoAddrPtr);
+  printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+  if (ucTxMode == TX_CONTINOUS) /* If Tx Coninuous Mode */
+  {
+    while (1)
+    {
+      for (i = 0u; i < PAYLOAD_LENGHT; i++)
+      {
+        ucData = *(pcTxBuffer + i);
+        vSpi1Write(RegFifo, *(pcTxBuffer + i));
+      }
+      ucData = ucSpi1Read(RegIrqFlags);
+      printf("Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
+
+      vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
+      ucData = ucSpi1Read(RegOpMode);
+      printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
+
+      ucIrqStatus = ucSpi1Read(RegIrqFlags);
+      printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+
+      while ((ucIrqStatus & 0x08u) == 0u)
+        ; /* Wait for TxDone set */
+
+      ucData = ucSpi1Read(RegOpMode);
+      printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+
+      if ((ucData & 0x01u) != 0u) /* If Automatic Mode change STANDBY */
+      {
+        printf("Automatic Mode change STANDBY from TX Continuous Mode\r\n");
+      }
+      else /* Automatic Mode change STANDBY */
+      {
+        printf("Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
+      }
+
+      /* Begin Read Data Transmit in FIFO */
+      vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
+      ucData = ucSpi1Read(RegFifoAddrPtr);
+      printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
+      ucData = ucSpi1Read(RegFifo); /* Check Destination Address */
+      printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+      ucData = ucSpi1Read(RegFifo); /* Check Source Address */
+      printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+      ucData = ucSpi1Read(RegFifo); /* Check Led Status */
+      printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
+      /* End Read Data Transmit in FIFO */
+
+      ucData = ucSpi1Read(RegIrqFlags);
+      printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+
+      vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u)); /* Clear TxDone Flag */
+      ucData = ucSpi1Read(RegIrqFlags);
+      printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+    }
+  }
+  else /* If Tx Single Mode */
+  {
+    for (i = 0u; i < PAYLOAD_LENGHT; i++)
+    {
+      ucData = *(pcTxBuffer + i);
+      vSpi1Write(RegFifo, *(pcTxBuffer + i));
+    }
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Check TxDone Flag Before Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
+
+    vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
     ucData = ucSpi1Read(RegOpMode);
-    printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+    printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
 
-    vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-    ucData = ucSpi1Read(RegFifoAddrPtr);
-    printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-    if(ucTxMode == TX_CONTINOUS)    /* If Tx Coninuous Mode */
+    ucIrqStatus = ucSpi1Read(RegIrqFlags);
+    printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+
+    while ((ucIrqStatus & 0x08u) == 0u)
+      ; /* Wait for TxDone set */
+
+    ucData = ucSpi1Read(RegOpMode);
+    printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+
+    if ((ucData & 0x01u) == 0u) /* Automatic Mode change STANDBY */
     {
-        while (1)
-        {
-            for(i = 0u; i < PAYLOAD_LENGHT; i++)
-            {
-                ucData = *(pcTxBuffer + i);
-                vSpi1Write(RegFifo, *(pcTxBuffer + i));
-            }
-            ucData = ucSpi1Read(RegIrqFlags);
-            printf("Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
-
-            vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
-            ucData = ucSpi1Read(RegOpMode);
-            printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
-
-            ucIrqStatus = ucSpi1Read(RegIrqFlags);
-            printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-
-            while((ucIrqStatus & 0x08u) == 0u);  /* Wait for TxDone set */
-
-            ucData = ucSpi1Read(RegOpMode);
-            printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
-
-            if((ucData & 0x01u) != 0u)  /* If Automatic Mode change STANDBY */
-            {
-                printf("Automatic Mode change STANDBY from TX Continuous Mode\r\n");
-            }
-            else /* Automatic Mode change STANDBY */
-            {
-                printf("Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
-            }
-
-            /* Begin Read Data Transmit in FIFO */
-            vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-            ucData = ucSpi1Read(RegFifoAddrPtr);
-            printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-
-            ucData = ucSpi1Read(RegFifo);   /* Check Destination Address */
-            printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-            ucData = ucSpi1Read(RegFifo);   /* Check Source Address */
-            printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-            ucData = ucSpi1Read(RegFifo);   /* Check Led Status */
-            printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
-            /* End Read Data Transmit in FIFO */
-
-            ucData = ucSpi1Read(RegIrqFlags);
-            printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-            vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u));  /* Clear TxDone Flag */
-            ucData = ucSpi1Read(RegIrqFlags);
-            printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-        }
-    }    
-    else    /* If Tx Single Mode */
+      printf("Automatic Mode change STANDBY fail from TX Single Mode\r\n");
+    }
+    else /* Automatic Mode change STANDBY fail */
     {
-        for(i = 0u; i < PAYLOAD_LENGHT; i++)
-        {
-            ucData = *(pcTxBuffer + i);
-            vSpi1Write(RegFifo, *(pcTxBuffer + i));
-        }
-        ucData = ucSpi1Read(RegIrqFlags);
-        printf("Check TxDone Flag Before Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
-
-        vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
-        ucData = ucSpi1Read(RegOpMode);
-        printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
-
-        ucIrqStatus = ucSpi1Read(RegIrqFlags);
-        printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-
-        while((ucIrqStatus & 0x08u) == 0u);  /* Wait for TxDone set */
-
-        ucData = ucSpi1Read(RegOpMode);
-        printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
-
-        if((ucData & 0x01u) == 0u)  /* Automatic Mode change STANDBY */
-        {
-            printf("Automatic Mode change STANDBY fail from TX Single Mode\r\n");
-        }
-        else /* Automatic Mode change STANDBY fail */
-        {
-            printf("Automatic Mode change STANDBY from TX Single Mode\r\n");
-        }
-
-        /* Begin Read Data Transmit in FIFO */
-        vSpi1Write(RegFifoAddrPtr , FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-        ucData = ucSpi1Read(RegFifoAddrPtr);
-        printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-
-        ucData = ucSpi1Read(RegFifo);   /* Check Destination Address */
-        printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-        ucData = ucSpi1Read(RegFifo);   /* Check Source Address */
-        printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-        ucData = ucSpi1Read(RegFifo);   /* Check Led Status */
-        printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
-        /* End Read Data Transmit in FIFO */
-
-        ucData = ucSpi1Read(RegIrqFlags);
-        printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-        vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u));  /* Clear TxDone Flag */
-        ucData = ucSpi1Read(RegIrqFlags);
-        printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-
-        vModeInit(SLEEP_MODE);          /* Init Module Lora into Sleep Mode */
-        ucData = ucSpi1Read(RegOpMode);
-        printf("Check Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
-        printf("Module switch to Sleep Mode\r\n");
+      printf("Automatic Mode change STANDBY from TX Single Mode\r\n");
     }
 
-    printf("****************** Finish Transmit ********************\r\n\r\n");
+    /* Begin Read Data Transmit in FIFO */
+    vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
+    ucData = ucSpi1Read(RegFifoAddrPtr);
+    printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
+    ucData = ucSpi1Read(RegFifo); /* Check Destination Address */
+    printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    ucData = ucSpi1Read(RegFifo); /* Check Source Address */
+    printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    ucData = ucSpi1Read(RegFifo); /* Check Led Status */
+    printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    /* End Read Data Transmit in FIFO */
+
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+
+    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u)); /* Clear TxDone Flag */
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+
+    vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
+    ucData = ucSpi1Read(RegOpMode);
+    printf("Check Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
+    printf("Module switch to Sleep Mode\r\n");
+  }
+
+  STM_LOGD("lora.c", "---------- Finish Transmit ----------");
 }
 
 /**
@@ -1572,191 +1515,193 @@ void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode)
   * @param ucRxMode: Receive Mode: Rx Single or Continuous
   * @retval None
   */
-void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
+void vLoraReceive(uint8_t *pcRxBuffer, uint8_t ucRxMode)
 {
-    uint8_t ucData = 0;
-    uint8_t i = 0;
-    uint8_t ucIrqStatus = 0;
-    printf("****************** Start Receive ********************\r\n\r\n");
+  uint8_t ucData = 0;
+  uint8_t i = 0;
+  uint8_t ucIrqStatus = 0;
+  printf("****************** Start Receive ********************\r\n\r\n");
 
-    /* Init Module Lora into Standby Mode */
-    vModeInit(STDBY_MODE);
+  /* Init Module Lora into Standby Mode */
+  vModeInit(STDBY_MODE);
+  ucData = ucSpi1Read(RegOpMode);
+  printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+
+  /* Set FifoPtrAddr to FifoRxPtrBase */
+  vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+  ucData = ucSpi1Read(RegFifoAddrPtr);
+  printf("Set Read Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
+  /* If Rx Continuous Mode */
+  if (ucRxMode == RX_CONTINUOUS)
+  {
+    /* Init Module Lora into RX Coninuous Mode */
+    vModeInit(RXCONTINUOUS_MODE);
     ucData = ucSpi1Read(RegOpMode);
-    printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
-    
-    /* Set FifoPtrAddr to FifoRxPtrBase */
-    vSpi1Write(RegFifoAddrPtr , FIFO_RX_BASE_ADDR);
-    ucData = ucSpi1Read(RegFifoAddrPtr);
-    printf("Set Read Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+    printf("Init Rx Continuous Mode: RegOpMode = 0x%XH\r\n", ucData);
 
-    /* If Rx Continuous Mode */
-    if(ucRxMode == RX_CONTINUOUS)
+    while (1)
     {
-        /* Init Module Lora into RX Coninuous Mode */
-        vModeInit(RXCONTINUOUS_MODE); 
-        ucData = ucSpi1Read(RegOpMode);
-        printf("Init Rx Continuous Mode: RegOpMode = 0x%XH\r\n", ucData);
+      ucData = ucSpi1Read(RegIrqFlags);
+      printf("Check RxDone Flags Before: RegIrqFlags = 0x%XH\r\n", ucData);
 
-        while(1)
+      /* Wait for RxDone set */
+      while ((ucSpi1Read(RegIrqFlags) & 0x40u) == 0u)
+        ;
+
+      ucIrqStatus = ucSpi1Read(RegIrqFlags);
+      printf("Check PayloadCrcError and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+
+      /* If PayloadCrcError Flag not set and ValidHeader Flag set */
+      if (((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
+      {
+        ucData = ucSpi1Read(RegFifoRxCurrentAddr);
+        vSpi1Write(RegFifoAddrPtr, ucData);
+
+        for (i = 0u; i < PAYLOAD_LENGHT; i++)
         {
-            ucData = ucSpi1Read(RegIrqFlags);
-            printf("Check RxDone Flags Before: RegIrqFlags = 0x%XH\r\n", ucData);
-
-            /* Wait for RxDone set */
-            while((ucSpi1Read(RegIrqFlags) & 0x40u) == 0u);
-
-            ucIrqStatus = ucSpi1Read(RegIrqFlags);
-            printf("Check PayloadCrcError and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-            
-            /* If PayloadCrcError Flag not set and ValidHeader Flag set */
-            if(((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
-            {
-                ucData = ucSpi1Read(RegFifoRxCurrentAddr);
-                vSpi1Write(RegFifoAddrPtr, ucData);
-
-                for(i = 0u; i < PAYLOAD_LENGHT; i++)
-                {
-                    *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
-                    ucData = *(pcRxBuffer + i);
-                    printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
-                }
-
-                /* Clear RxDone Flag */
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-
-                /* Clear ValidHeader Flag */
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-            }
-
-            /* If PayloadCrcError Flag set */
-            else
-            {
-                printf("Data Receive Failed\r\n");
-
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);                
-
-                /* Clear PayloadCrcError Flag */
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-            }
-            printf("****************** Finish Receive ********************\r\n\r\n");
+          *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
+          ucData = *(pcRxBuffer + i);
+          printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
         }
-    }
 
-    /* If Rx Single Module */
-    else
-    {
-        /* Init Module Lora into RX Single Mode */
-        vModeInit(RXSINGLE_MODE); 
-        ucData = ucSpi1Read(RegOpMode);
-        printf("Init Rx Single Mode: RegOpMode = 0x%XH\r\n", ucData);
+        /* Clear RxDone Flag */
+        vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+
+        /* Clear ValidHeader Flag */
+        vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+      }
+
+      /* If PayloadCrcError Flag set */
+      else
+      {
+        printf("Data Receive Failed\r\n");
 
         ucData = ucSpi1Read(RegIrqFlags);
-        printf("Check RxTimeout and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucData);
+        printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
-        /* Wait for RxTimeout or RxDone Flag set */
-        while(((ucSpi1Read(RegIrqFlags) & 0x40u) | (ucSpi1Read(RegIrqFlags) & 0x80)) == 0u);
+        /* Clear PayloadCrcError Flag */
+        vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+      }
+      printf("****************** Finish Receive ********************\r\n\r\n");
+    }
+  }
+
+  /* If Rx Single Module */
+  else
+  {
+    /* Init Module Lora into RX Single Mode */
+    vModeInit(RXSINGLE_MODE);
+    ucData = ucSpi1Read(RegOpMode);
+    printf("Init Rx Single Mode: RegOpMode = 0x%XH\r\n", ucData);
+
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Check RxTimeout and RxDone Flags: RegIrqFlags = 0x%XH\r\n", ucData);
+
+    /* Wait for RxTimeout or RxDone Flag set */
+    while (((ucSpi1Read(RegIrqFlags) & 0x40u) | (ucSpi1Read(RegIrqFlags) & 0x80)) == 0u)
+      ;
+
+    ucIrqStatus = ucSpi1Read(RegIrqFlags);
+    printf("Check RxTimeout or RxDone: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+
+    /* If RxDone Flag set */
+    if ((ucIrqStatus & 0x40u) != 0u)
+    {
+      ucData = ucSpi1Read(RegOpMode);
+      printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+
+      /* If Automatic Mode change STANDBY */
+      if ((ucData & 0x01u) != 0u)
+      {
+        printf("Automatic Mode change STANBY from RX Single Mode\r\n");
 
         ucIrqStatus = ucSpi1Read(RegIrqFlags);
-        printf("Check RxTimeout or RxDone: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+        printf("Check PlayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
-        /* If RxDone Flag set */
-        if((ucIrqStatus & 0x40u) != 0u) 
+        /* If PlayloadCrcError Flag not set and ValidHeader Flag set */
+        if (((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
         {
-            ucData = ucSpi1Read(RegOpMode);
-            printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+          ucData = ucSpi1Read(RegFifoRxCurrentAddr);
+          vSpi1Write(RegFifoAddrPtr, ucData);
+          for (i = 0u; i < PAYLOAD_LENGHT; i++)
+          {
+            *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
+            ucData = *(pcRxBuffer + i);
+            printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
+          }
+          ucData = ucSpi1Read(RegIrqFlags);
+          printf("Check RxDone and ValidHeader Flags Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
-            /* If Automatic Mode change STANDBY */
-            if((ucData & 0x01u) != 0u)
-            {
-                printf("Automatic Mode change STANBY from RX Single Mode\r\n");
+          vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
 
-                ucIrqStatus = ucSpi1Read(RegIrqFlags);
-                printf("Check PlayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+          /* Clear ValidHeader Flag */
+          vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
+          ucData = ucSpi1Read(RegIrqFlags);
+          printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
 
-                /* If PlayloadCrcError Flag not set and ValidHeader Flag set */
-                if(((ucIrqStatus & 0x20u) == 0u) && ((ucIrqStatus & 0x10u) != 0u))
-                {
-                    ucData = ucSpi1Read(RegFifoRxCurrentAddr);
-                    vSpi1Write(RegFifoAddrPtr, ucData);
-                    for(i = 0u; i < PAYLOAD_LENGHT; i++)
-                    {
-                        *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
-                        ucData = *(pcRxBuffer + i);
-                        printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
-                    }
-                    ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Check RxDone and ValidHeader Flags Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-                    vSpi1Write(RegFifoAddrPtr , FIFO_RX_BASE_ADDR);
-
-                    /* Clear ValidHeader Flag */
-                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x10u));
-                    ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Clear ValidHeader Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-
-                    /* Clear RxDone Flag */
-                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
-                    ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-                }
-
-                /* If PlayloadCrcError Flag set  */
-                else
-                {
-                    /* Read Flags Status */
-                    ucIrqStatus = ucSpi1Read(RegIrqFlags);
-                    printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-
-                    /* Clear PayloadCrcError Flag */
-                    vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
-                    ucData = ucSpi1Read(RegIrqFlags);
-                    printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-                }
-
-                /* Init Module Lora into Sleep Mode */
-                vModeInit(SLEEP_MODE);
-                ucData = ucSpi1Read(RegOpMode);
-                printf("Init Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
-            }
-
-            /* If Automatic Mode chang STANBY fail */
-            else
-            {
-                printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
-            }
+          /* Clear RxDone Flag */
+          vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
+          ucData = ucSpi1Read(RegIrqFlags);
+          printf("Clear RxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
         }
 
-        /* If Rxtimeout Flag set */
+        /* If PlayloadCrcError Flag set  */
         else
         {
-            ucData = ucSpi1Read(RegOpMode);
-            printf("Check Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
-            if((ucData & 0x01u) != 0u)
-            {
-                printf("Automatic Mode change STANBY from RX Single Mode\r\n");
+          /* Read Flags Status */
+          ucIrqStatus = ucSpi1Read(RegIrqFlags);
+          printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Check Timeout Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-                /* Clear Timeout Flag */
-                vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x80u));
-                ucData = ucSpi1Read(RegIrqFlags);
-                printf("Clear Timeout Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-            }
-
-            /* If Automatic Mode chang STANBY fail */
-            else
-            {
-                printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
-            }
+          /* Clear PayloadCrcError Flag */
+          vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
+          ucData = ucSpi1Read(RegIrqFlags);
+          printf("Clear PayloadCrcError Flag: RegIrqFlags = 0x%XH\r\n", ucData);
         }
+
+        /* Init Module Lora into Sleep Mode */
+        vModeInit(SLEEP_MODE);
+        ucData = ucSpi1Read(RegOpMode);
+        printf("Init Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
+      }
+
+      /* If Automatic Mode chang STANBY fail */
+      else
+      {
+        printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
+      }
     }
-    printf("****************** Finish Receive ********************\r\n\r\n");
+
+    /* If Rxtimeout Flag set */
+    else
+    {
+      ucData = ucSpi1Read(RegOpMode);
+      printf("Check Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+      if ((ucData & 0x01u) != 0u)
+      {
+        printf("Automatic Mode change STANBY from RX Single Mode\r\n");
+
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Check Timeout Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+
+        /* Clear Timeout Flag */
+        vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x80u));
+        ucData = ucSpi1Read(RegIrqFlags);
+        printf("Clear Timeout Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+      }
+
+      /* If Automatic Mode chang STANBY fail */
+      else
+      {
+        printf("Automatic Mode change STANBY fail from RX Single Mode\r\n");
+      }
+    }
+  }
+  printf("****************** Finish Receive ********************\r\n\r\n");
 }
