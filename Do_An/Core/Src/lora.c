@@ -1278,6 +1278,7 @@ void vLoraInit(void)
   // LORA_GET_REGISTER(RegSymbTimeoutLsb);
 
   // vPreambleLengthInit(PREAMBLE_LENGTH); /* ANCHOR Preamble length = PreambleLength + 4.25 Symbols */
+  vPreambleLengthInit(0x00FF);
   // LORA_GET_REGISTER(RegPreambleMsb);
   // LORA_GET_REGISTER(RegPreambleLsb);
 
@@ -1332,7 +1333,7 @@ void vLoraInit(void)
 
   // vMapPreambleDetect(PREAMBBLE_DETECT_INTERRUPT);
   // LORA_GET_REGISTER(RegTcxo);
-  // printf("RegTcxo = 0x%XH\r\n", ucData);
+  // printf("RegTcxo = 0x%x\r\n", ucData);
 
   vTcxoInputOnInit(XTAL_INPUT); /* ANCHOR Controls the crystal oscillator */
   LORA_GET_REGISTER(RegTcxo);
@@ -1349,10 +1350,10 @@ void vLoraInit(void)
 /**
   * @brief Transmit Data into FIFO
   * @param pcTxBuffer: Data Address Transmit
-  * @param ucTxMode: Transmit Mode: Tx Single or Rx Coninuous
+  * @param bRepeat: Tx Single or Rx Coninuous
   * @retval None
   */
-void vLoraTransmit(u8 *pcTxBuffer, u8 ucTxMode)
+void vLoraTransmit(u8 *pcTxBuffer, bool bRepeat)
 {
   u8 ucData = 0;
   u8 i = 0;
@@ -1361,73 +1362,85 @@ void vLoraTransmit(u8 *pcTxBuffer, u8 ucTxMode)
   STM_LOGD("lora.c", "---------- Start Transmit ----------");
 
   vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
-  LORA_GET_REGISTER(RegOpMode);
+  ucData = ucSpi1Read(RegOpMode);
+  printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
 
   vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
   ucData = ucSpi1Read(RegFifoAddrPtr);
-  STM_LOGV("Transmit", "Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+  printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
   do
   {
     for (i = 0u; i < PAYLOAD_LENGTH; i++)
     {
-      STM_LOGV("Transmit", "Send data: 0x%XH\r\n", *(pcTxBuffer + i));
+      ucData = *(pcTxBuffer + i);
       vSpi1Write(RegFifo, *(pcTxBuffer + i));
     }
-
-    STM_LOGV("Transmit", "Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
 
     vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
-    STM_LOGV("Transmit", "Init Tx Mode: RegOpMode = 0x%XH\r\n", ucSpi1Read(RegOpMode));
+    ucData = ucSpi1Read(RegOpMode);
+    printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
 
     ucIrqStatus = ucSpi1Read(RegIrqFlags);
-    STM_LOGV("Transmit", "Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+    printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
-    while ((ucIrqStatus & 0x08u) == 0u)
+    while ((ucSpi1Read(RegIrqFlags) & 0x08u) == 0u)
       ; /* Wait for TxDone set */
 
     ucData = ucSpi1Read(RegOpMode);
-    STM_LOGV("Transmit", "Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+    printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
 
-    if ((ucData & 0x07) != 0b001) /* If Automatic Mode change STANDBY */
+    if ((ucData & 0x07u) == 1u) /* If Automatic Mode change STANDBY */
     {
-      STM_LOGE("TransmitErr", "Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
-      return;
+      printf("Automatic Mode change STANDBY from TX Continuous Mode\r\n");
     }
     else /* Automatic Mode change STANDBY */
     {
-      STM_LOGV("Transmit", "Automatic Mode change STANDBY from TX Continuous Mode\r\n");
+      printf("Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
     }
 
     /* Begin Read Data Transmit in FIFO */
     vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-    STM_LOGV("Transmit", "Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucSpi1Read(RegFifoAddrPtr));
-    /* Check Destination Address */
-    STM_LOGV("Transmit", "Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
-    /* Check Source Address */
-    STM_LOGV("Transmit", "Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
-    /* Check Led Status */
-    STM_LOGV("Transmit", "Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
+    ucData = ucSpi1Read(RegFifoAddrPtr);
+    printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+
+    ucData = ucSpi1Read(RegFifo); /* Check Destination Address */
+    printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    ucData = ucSpi1Read(RegFifo); /* Check Source Address */
+    printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    ucData = ucSpi1Read(RegFifo); /* Check Led Status */
+    printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
     /* End Read Data Transmit in FIFO */
-    STM_LOGV("Transmit", "Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
+
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
 
     vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u)); /* Clear TxDone Flag */
-    STM_LOGV("Transmit", "Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
-  } while (ucTxMode);
+    ucData = ucSpi1Read(RegIrqFlags);
+    printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+  } while (bRepeat);
 
+  vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
+  ucData = ucSpi1Read(RegOpMode);
+  printf("Check Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
+  printf("Module switch to Sleep Mode\r\n");
   STM_LOGD("lora.c", "---------- Finish Transmit ----------");
 }
 
 /**
   * @brief Receive Data in FIFO
   * @param pcRxBuffer: Data Address Receive
-  * @param ucRxMode: Receive Mode: Rx Single or Continuous
+  * @param bRepeat: Receive Mode: Rx Single or Continuous
   * @retval None
   */
-void vLoraReceive(u8 *pcRxBuffer, u8 ucRxMode)
+void vLoraReceive(u8 *pcRxBuffer, bool bRepeat)
 {
   u8 ucData = 0;
   u8 i = 0;
   u8 ucIrqStatus = 0;
+
   printf("****************** Start Receive ********************\r\n\r\n");
 
   /* Init Module Lora into Standby Mode */
@@ -1441,7 +1454,7 @@ void vLoraReceive(u8 *pcRxBuffer, u8 ucRxMode)
   printf("Set Read Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
 
   /* If Rx Continuous Mode */
-  if (ucRxMode == RX_CONTINUOUS)
+  if (bRepeat == true)
   {
     /* Init Module Lora into RX Coninuous Mode */
     vModeInit(RXCONTINUOUS_MODE);
@@ -1472,6 +1485,9 @@ void vLoraReceive(u8 *pcRxBuffer, u8 ucRxMode)
           ucData = *(pcRxBuffer + i);
           printf("Read Data From FIFO: RegFifo = 0x%XH\r\n", ucData);
         }
+        /* Read RSSI Value */
+
+        //        printf("RSSI Value = %d\r\n", sRssiRead());
 
         /* Clear RxDone Flag */
         vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x40u));
@@ -1645,4 +1661,135 @@ u8 usLoRaGetHeaderMode(void)
 u8 usLoraGetSpreadingFactor(void)
 {
   return (ucSpi1Read(RegModemConfig2) & SPREADING_FACTOR_Msk) >> SPREADING_FACTOR_MskPos;
+}
+
+void LoRaTransmit(u8 *data, u8 size, u32 timeoutMs)
+{
+  static bool isInit = false;
+  if (!isInit)
+  {
+    vModeInit(STDBY_MODE);
+    LORA_GET_REGISTER(RegOpMode);
+
+    /* TX INIT */
+    LORA_GET_REGISTER(RegFifoAddrPtr);
+    isInit = true;
+  }
+  /* STANDBY MODE */
+
+  vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
+  /* WRITE DATA FIFO */
+  for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
+  {
+    STM_LOGV("Transmit", "data transmit[%d]: 0x%x", i, *(data + i));
+    LORA_GET_REGISTER(RegFifoAddrPtr);
+    vSpi1Write(RegFifo, *(data + i));
+  }
+  /* MODE REQUEST TX */
+  vModeInit(TX_MODE);
+  LORA_GET_REGISTER(RegOpMode);
+  /* Init Module Lora into TX Mode */
+  u32 startTick = HAL_GetTick();
+  while ((ucSpi1Read(RegIrqFlags) & TX_DONE_Msk) >> TX_DONE_MskPos == 0u)
+  {
+    // STM_LOGV("Transmit", "Wait for TX_DONE ...\r\n");
+    if (HAL_GetTick() - startTick >= timeoutMs)
+    {
+      STM_LOGE("TransmitErr", "TX_TIMEOUT");
+      break;
+    }
+  }
+  /* Clear TxDone Flag */
+  vSpi1Write(RegIrqFlags, TX_DONE_Msk);
+  LORA_GET_REGISTER(RegIrqFlags);
+}
+
+void LoRaReceiveCont(u8 *outData, u8 size, u32 timeoutMs)
+{
+  static bool isInit = false;
+  if (!isInit)
+  {
+    /* STANDY BY MODE */
+    vModeInit(STDBY_MODE);
+    LORA_GET_REGISTER(RegOpMode);
+
+    /* RX CONTINUOUS MODE */
+    // if (rxMode == RXCONTINUOUS_MODE)
+    vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+    vModeInit(RXCONTINUOUS_MODE);
+    // else if (rxMode == RXSINGLE_MODE)
+    //   vModeInit(RXSINGLE_MODE);
+    LORA_GET_REGISTER(RegOpMode);
+    isInit = true;
+  }
+
+  /* WAIT FOR RX_DONE */
+  if (timeoutMs == LORA_MAX_DELAY)
+  {
+    while ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos == 0u)
+      ;
+  }
+  else
+  {
+    u32 startTick = HAL_GetTick();
+    while ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos == 0u)
+    {
+      // STM_LOGV("Transmit", "Wait for TX_DONE ...\r\n");
+      if (HAL_GetTick() - startTick >= timeoutMs)
+      {
+        STM_LOGE("ReceiverErr", "RX_TIMEOUT");
+        break;
+      }
+    }
+  }
+
+  if ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos)
+  {
+    /* PAYLOAD_CRC CHECK */
+    u8 temp = ucSpi1Read(RegIrqFlags);
+    if ((temp & PAYLOAD_CRC_ERROR_Msk) >> PAYLOAD_CRC_ERROR_MskPos == 1)
+    {
+      STM_LOGE("ReceiveErr", "Payload CRC Failed");
+    }
+    else
+    {
+      vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr));
+      for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
+      {
+        *(outData + i) = ucSpi1Read(RegFifo);
+        STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, *(outData + i));
+        LORA_GET_REGISTER(RegFifoAddrPtr);
+      }
+    }
+  }
+
+  /* CLEAR RX_DONE FLAG */
+  vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
+  LORA_GET_REGISTER(RegIrqFlags);
+}
+
+void LoRaReceiveContInISR(u8 *outData, u8 size)
+{
+  if ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos)
+  {
+    /* PAYLOAD_CRC CHECK */
+    u8 temp = ucSpi1Read(RegIrqFlags);
+    if ((temp & PAYLOAD_CRC_ERROR_Msk) >> PAYLOAD_CRC_ERROR_MskPos == 1)
+    {
+      STM_LOGE("ReceiveErr", "Payload CRC Failed");
+    }
+    else
+    {
+      vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr));
+      for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
+      {
+        *(outData + i) = ucSpi1Read(RegFifo);
+        STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, *(outData + i));
+        // LORA_GET_REGISTER(RegFifoAddrPtr);
+      }
+    }
+  }
+
+  /* CLEAR RX_DONE FLAG */
+  vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
 }

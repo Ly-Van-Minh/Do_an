@@ -57,10 +57,21 @@ const char *MAIN_TAG = "MAIN_TAG";
 
 MainAppTypeDef mInfo = {
     .adcLightSensor = 0,
+    .isLoRaReceived = false,
     .isInit = false,
 };
 
-uint8_t ucMatrix[PAYLOAD_LENGTH] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
+uint8_t ucMatrix[PAYLOAD_LENGTH] =
+    {NODE1_ADDRESS,
+     GATEWAY_ADDRESS,
+     RELAY_ON,
+     0x01,
+     0x02,
+     0x03,
+     0x04,
+     0x05,
+     0x06,
+     0x07};
 uint8_t ucMatrixReceive[PAYLOAD_LENGTH];
 /* USER CODE END PV */
 
@@ -112,12 +123,13 @@ int main(void)
   STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
   STM_LOGD(MAIN_TAG, "------START APPLICATION------");
   vLoraInit();
-  // vLoraTransmit(ucMatrix, TX_CONTINOUS);
-  // ucMatrix[0] = NODE2_ADDRESS;
-  // ucMatrix[1] = GATEWAY_ADDRESS;
-  // ucMatrix[2] = RELAY_OFF;
-  // vLoraTransmit(ucMatrix, TX_SINGLE);
-  // vLoraReceive(ucMatrixReceive, RX_CONTINUOUS);
+  LORA_GET_REGISTER(RegSyncWord);
+  LORA_GET_REGISTER(RegPayloadLength);
+
+  /* Receiver */
+  vModeInit(STDBY_MODE);
+  vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+  vModeInit(RXCONTINUOUS_MODE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,8 +138,38 @@ int main(void)
   {
     /* reset IWDG */
     // ADC_READ_LIGHTSENSOR();
-    vLoraTransmit(ucMatrix, TX_SINGLE);
-    HAL_Delay(1000);
+    // printf("\r\n");
+    // ucMatrix[0]++;
+    // LoRaTransmit(ucMatrix, PAYLOAD_LENGTH, 5000);
+    // HAL_Delay(1000);
+
+    if (mInfo.isLoRaReceived)
+    {
+      mInfo.isLoRaReceived = false;
+      if ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos)
+      {
+        /* PAYLOAD_CRC CHECK */
+        u8 temp = ucSpi1Read(RegIrqFlags);
+        if ((temp & PAYLOAD_CRC_ERROR_Msk) >> PAYLOAD_CRC_ERROR_MskPos == 1)
+        {
+          STM_LOGE("ReceiveErr", "Payload CRC Failed");
+        }
+        else
+        {
+          vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr));
+          for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
+          {
+            LORA_GET_REGISTER(RegFifoAddrPtr);
+            // *(outData + i) = ucSpi1Read(RegFifo);
+            STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, ucSpi1Read(RegFifo));
+            // LORA_GET_REGISTER(RegFifoAddrPtr);
+          }
+        }
+      }
+
+      /* CLEAR RX_DONE FLAG */
+      vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
+    }
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
