@@ -34,7 +34,6 @@
 #define PREAMBLE_LENGTH             0x0008u
 
 #define TX_NORMAL_MODE              0u
-#define CRC_ENABLE                  1u
 #define RX_TIMEOUT                  0x0064u
 #define PAYLOAD_LENGTH              3u   /* Payload Lenght */
 #define PAYLOAD_MAX_LENGTH          0xFFu
@@ -55,7 +54,6 @@
 #define RX_DONE                     0u
 #define TX_DONE                     1u
 #define CAD_DONE                    2u
-#define TCXO_INPUT                  0u
 #define PA_DAC                      0x07u
 
 #define ACCESS_LORA_REGISTERS       0u
@@ -237,6 +235,18 @@ enum eTX_MODE
     TX_CONTINOUS = 1u,
 };
 
+enum eCRC_MODE
+{
+    CRC_ENABLE = 1u,
+    CRC_DISABLE = 0u,
+};
+
+enum OSCILLATOR_SOURCE
+{
+    XTAL_INPUT = 0u,
+    TCXO_INPUT = 1u,
+};
+
 /* -------------------------------------------------------------------------- */
 /*                    Begin define registers of module Lora                   */
 /* -------------------------------------------------------------------------- */
@@ -403,7 +413,7 @@ uint16_t usValidHeaderCntRead(void);
 uint16_t usValidPacketCntRead(void);
 u8 ucRxCodingRateRead(void);
 u8 ucModemStatusRead(void);
-u8 ucPacketRssiRead(void);
+u16 ucPacketRssiRead(void);
 u8 ucRssiRead(void);
 u8 ucPllTimeoutRead(void);
 u8 ucCrcOnPayloadread(void);

@@ -89,7 +89,7 @@ extern "C"
 #define NODE1_ADDRESS 0x11u   /* Address node 1 */
 #define NODE2_ADDRESS 0x22u   /* Address node 2 */
 #define NODE3_ADDRESS 0x33u   /* Address node 3 */
-#define GATEWAY_ADDRESS 0x44u /* Adress Gateway */
+#define GATEWAY_ADDRESS 0x99u /* Adress Gateway */
 
 #define RELAY_ON 0xAAu
 #define RELAY_OFF 0xBBu

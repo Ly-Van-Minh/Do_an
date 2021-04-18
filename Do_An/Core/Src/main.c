@@ -112,7 +112,6 @@ int main(void)
   STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
   STM_LOGD(MAIN_TAG, "------START APPLICATION------");
   vLoraInit();
-  vLoraTransmit(ucMatrix, TX_SINGLE);
   // vLoraTransmit(ucMatrix, TX_CONTINOUS);
   // ucMatrix[0] = NODE2_ADDRESS;
   // ucMatrix[1] = GATEWAY_ADDRESS;
@@ -127,6 +126,7 @@ int main(void)
   {
     /* reset IWDG */
     // ADC_READ_LIGHTSENSOR();
+    vLoraTransmit(ucMatrix, TX_SINGLE);
     HAL_Delay(1000);
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */

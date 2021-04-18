@@ -1,6 +1,6 @@
 "Core/Src/adc.o"
 "Core/Src/gpio.o"
-"Core/Src/lora-rework.o"
+"Core/Src/light-sensor.o"
 "Core/Src/lora.o"
 "Core/Src/main.o"
 "Core/Src/misc.o"

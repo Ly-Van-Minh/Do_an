@@ -1,3 +1,0 @@
-lora-rework.c:3:19:LoRaInit	16	static
-lora-rework.c:7:19:LoRaReadRegister	16	static
-lora-rework.c:11:19:LoRaSingleTransfer	16	static

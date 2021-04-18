@@ -13,7 +13,6 @@
 const char *LORA_TAG = "LORA_TAG";
 extern SPI_HandleTypeDef hspi1;
 
-
 /**
   * @brief Write Data Function To Lora Module
   * @param ucAddress: Address registers or fifo of Lora
@@ -575,11 +574,11 @@ u8 ucPacketSnrRead(void)
   * @param None
   * @retval Value RSSI of the latest packet received
   */
-u8 ucPacketRssiRead(void)
+u16 ucPacketRssiRead(void)
 {
-  u8 ucData;
-  ucData = ucSpi1Read(RegPktRssiValue);
-  return ucData;
+  u16 rawRssi = ucSpi1Read(RegPktRssiValue);
+  u16 rawSNR = ucSpi1Read(RegPktSnrValue) / 4;
+  return (-164 + rawRssi + rawSNR * 0.25);
 }
 
 /**
@@ -842,9 +841,9 @@ void vAgcAutoOnInit(u8 ucAgcAutoOn)
 unsigned int uiFreqError(void)
 {
   unsigned int uiData = 0;
-    uiData |= (((unsigned int)(ucSpi1Read(RegFeiMsb) & 0x0F) << 16) | \
-               ((unsigned int)ucSpi1Read(RegFeiMid) << 8) | \
-               (unsigned int)ucSpi1Read(RegFeiLsb));
+  uiData |= (((unsigned int)(ucSpi1Read(RegFeiMsb) & 0x0F) << 16) |
+             ((unsigned int)ucSpi1Read(RegFeiMid) << 8) |
+             (unsigned int)ucSpi1Read(RegFeiLsb));
   return uiData;
 }
 
@@ -1225,8 +1224,8 @@ void vLoraInit(void)
   vLongRangeModeInit(LORA_MODE); /* ANCHOR CHECKED Init Module Lora into Lora TM Mode */
   LORA_GET_REGISTER(RegOpMode);
 
-  vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
-  vAccessSharedRegInit(ACCESS_LORA_REGISTERS); /* ANCHOR CHECKED Access LoRa registers page 0x0D: 0x3F */
+  vModeInit(STDBY_MODE);                              /* Init Module Lora into Standby Mode */
+  vAccessSharedRegInit(ACCESS_LORA_REGISTERS);        /* ANCHOR CHECKED Access LoRa registers page 0x0D: 0x3F */
   vLowFrequencyModeOnInit(ACCESS_LOW_FREQUENCY_MODE); /* CHECKED Access Low Frequency Mode registers */
   LORA_GET_REGISTER(RegOpMode);
 
@@ -1243,108 +1242,99 @@ void vLoraInit(void)
   // vPaRampInit(PA_RAMP);
   LORA_GET_REGISTER(RegPaRamp);
 
-
   // vOcpOnInit(OCP_ON); /* OCP enabled */
   vOcpTrimInit(OCP_TRIM); /* CHECKED Trimming of OCP current: Imax = 240mA */
   LORA_GET_REGISTER(RegOcp);
-  STM_LOGD("CHECKED", "--------------------");
 
   // vLnaGainInit(G1); /* LNA gain setting: G1 = maximum gain */
   // vLnaBoostLfInit(LNA_BOOST_LF); /* Low Frequency (RFI_LF) LNA current adjustment Default LNA current */
+  // vLnaBoostHfInit(LNA_BOOST_HF); /* High Frequency (RFI_HF) LNA current adjustment Boost on, 150% LNA current */
   LORA_GET_REGISTER(RegLna);
 
-  vLnaBoostHfInit(LNA_BOOST_HF); /* High Frequency (RFI_HF) LNA current adjustment Boost on, 150% LNA current */
-  LORA_GET_REGISTER(RegLna);
-
-  vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* ANCHOR Write base address in FIFO data buffer for TX modulator */
+  // vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* ANCHOR CHECKEDWrite base address in FIFO data buffer for TX modulator */
   LORA_GET_REGISTER(RegFifoTxBaseAddr);
 
-  vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* ANCHOR Read base address in FIFO data buffer for RX demodulator */
+  // vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* ANCHOR CHECKEDRead base address in FIFO data buffer for RX demodulator */
   LORA_GET_REGISTER(RegFifoRxBaseAddr);
 
-  vIrqFlagsMaskInit(IRQ_FLAGS_MASK); /* ANCHOR Disable all interrupts mask */
+  // vIrqFlagsMaskInit(IRQ_FLAGS_MASK); /* ANCHOR CHECKEDDisable all interrupts mask */
   LORA_GET_REGISTER(RegIrqFlagsMask);
 
   // vBandWidthInit(BANDWIDTH_125K); /* ANCHOR CHECKED Signal bandwidth: 250kHz */
   vCodingRateInit(CODING_RATE_4_5); /* ANCHOR Error coding rate 4/5 */
-  vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* ANCHOR Init Implicit Header mode */
 
+  // vBandWidthInit(BANDWIDTH_125K);
+  // vCodingRateInit(CODING_RATE_4_5);
+  vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* ANCHOR Init Implicit Header mode */
   LORA_GET_REGISTER(RegModemConfig1);
 
   vSpreadingFactorInit(SPREADING_FACTOR_6_64); /* ANCHOR SF rate 64 chips / symbol */
-  LORA_GET_REGISTER(RegModemConfig2);
-
-  vTxContinuousModeInit(TX_NORMAL_MODE); /* ANCHOR Normal mode, a single packet is sent */
-  LORA_GET_REGISTER(RegModemConfig2);
-
+  // vTxContinuousModeInit(TX_SINGLE); /* ANCHOR Normal mode, a single packet is sent */
   vRxPayloadCrcOnInit(CRC_ENABLE); /* ANCHOR Enable CRC generation and check on payload */
   LORA_GET_REGISTER(RegModemConfig2);
 
-  vSymbTimeoutInit(RX_TIMEOUT); /* ANCHOR RX operation time-out */
-  LORA_GET_REGISTER(RegModemConfig2);
-  LORA_GET_REGISTER(RegSymbTimeoutLsb);
+  // vSymbTimeoutInit(RX_TIMEOUT); /* ANCHOR RX operation time-out */
+  // LORA_GET_REGISTER(RegModemConfig2);
+  // LORA_GET_REGISTER(RegSymbTimeoutLsb);
 
   // vPreambleLengthInit(PREAMBLE_LENGTH); /* ANCHOR Preamble length = PreambleLength + 4.25 Symbols */
   // LORA_GET_REGISTER(RegPreambleMsb);
   // LORA_GET_REGISTER(RegPreambleLsb);
 
-  vPayloadLengthInit(PAYLOAD_LENGTH); /* ANCHOR Init Payload length */
+  vPayloadLengthInit(PAYLOAD_LENGTH); /* ANCHOR CHECKED Init Payload length */
   LORA_GET_REGISTER(RegPayloadLength);
 
-  vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH); /* ANCHOR Maximum payload length */
-  LORA_GET_REGISTER(RegMaxPayloadLength);
+  // vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH); /* ANCHOR Maximum payload length */
+  // LORA_GET_REGISTER(RegMaxPayloadLength);
 
-  vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD); /* Symbol periods between frequency hops */
-  LORA_GET_REGISTER(RegHopPeriod);
+  // vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD); /* Symbol periods between frequency hops */
+  // LORA_GET_REGISTER(RegHopPeriod);
 
-  vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the symbol length exceeds16ms */
-  LORA_GET_REGISTER(RegModemConfig3);
-
-  vAgcAutoOnInit(AGC_AUTO); /* 0 -> LNA gain set by register LnaGain 1 -> LNA gain set by the internal AGC loop*/
-  LORA_GET_REGISTER(RegModemConfig3);
+  // vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the symbol length exceeds16ms */
+  // vAgcAutoOnInit(AGC_AUTO); /* 0 -> LNA gain set by register LnaGain 1 -> LNA gain set by the internal AGC loop*/
+  // LORA_GET_REGISTER(RegModemConfig3);
 
   vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE); /* LoRa Detection Optimize 0x03 -> SF7 to SF12; 0x05 -> SF6 */
   LORA_GET_REGISTER(RegDetectOptimize);
 
-  vInvertIQInit(INVERT_IQ); /* ANCHOR Invert the LoRa I and Q signals */
-  LORA_GET_REGISTER(RegInvertIQ);
-  LORA_GET_REGISTER(RegInvertIQ);
+  // vInvertIQInit(INVERT_IQ); /* ANCHOR Invert the LoRa I and Q signals */
+  // LORA_GET_REGISTER(RegInvertIQ);
 
   vDetectionThresholdInit(LORA_DETECTION_THRESHOLD); /* ANCHOR LoRa detection threshold 0x0A -> SF7 to SF12; 0x0C -> SF6 */
   LORA_GET_REGISTER(RegDetectionThreshold);
 
-  vSyncWordInit(LORA_SYNC_WORD); /* ANCHOR Init Sync Word */
+  // vSyncWordInit(LORA_SYNC_WORD); /* ANCHOR Init Sync Word */
   LORA_GET_REGISTER(RegSyncWord);
 
-  vAgcReferenceLevelInit(AGC_REFERENCE); /* Sets the floor reference for all AGC thresholds */
-  LORA_GET_REGISTER(RegAgcRef);
+  // vAgcReferenceLevelInit(AGC_REFERENCE); /* Sets the floor reference for all AGC thresholds */
+  // LORA_GET_REGISTER(RegAgcRef);
 
-  vAgcStep1Init(AGC_STEP1); /* Defines the 1st AGC Threshold */
-  LORA_GET_REGISTER(RegAgcRef);
+  // vAgcStep1Init(AGC_STEP1); /* Defines the 1st AGC Threshold */
+  // LORA_GET_REGISTER(RegAgcRef);
 
-  vAgcStep2Init(AGC_STEP2); /* Defines the 2nd AGC Threshold */
-  LORA_GET_REGISTER(RegAgcThresh2);
+  // vAgcStep2Init(AGC_STEP2); /* Defines the 2nd AGC Threshold */
+  // LORA_GET_REGISTER(RegAgcThresh2);
 
-  vAgcStep3Init(AGC_STEP3); /* Defines the 3rd AGC Threshold */
-  LORA_GET_REGISTER(RegAgcThresh2);
+  // vAgcStep3Init(AGC_STEP3); /* Defines the 3rd AGC Threshold */
+  // LORA_GET_REGISTER(RegAgcThresh2);
 
-  vAgcStep4Init(AGC_STEP4); /* Defines the 4th AGC Threshold */
-  LORA_GET_REGISTER(RegAgcThresh3);
+  // vAgcStep4Init(AGC_STEP4); /* Defines the 4th AGC Threshold */
+  // LORA_GET_REGISTER(RegAgcThresh3);
 
-  vAgcStep5Init(AGC_STEP5); /* Defines the 5th AGC Threshold */
-  LORA_GET_REGISTER(RegAgcThresh3);
+  // vAgcStep5Init(AGC_STEP5); /* Defines the 5th AGC Threshold */
+  // LORA_GET_REGISTER(RegAgcThresh3);
 
-  vPllBandwidth(PLL_BANDWIDTH); /* Controls the PLL bandwidth */
-  LORA_GET_REGISTER(RegPll);
+  // vPllBandwidth(PLL_BANDWIDTH); /* Controls the PLL bandwidth */
+  // LORA_GET_REGISTER(RegPll);
 
-  vDio0MappingInit(CAD_DONE);
-  LORA_GET_REGISTER(RegDioMapping1);
+  // vDio0MappingInit(RX_DONE); /* CAD: Channel activity detection */
+  // LORA_GET_REGISTER(RegDioMapping1);
 
   // vMapPreambleDetect(PREAMBBLE_DETECT_INTERRUPT);
   // LORA_GET_REGISTER(RegTcxo);
   // printf("RegTcxo = 0x%XH\r\n", ucData);
 
-  vTcxoInputOnInit(TCXO_INPUT); /* ANCHOR Controls the crystal oscillator */
+  vTcxoInputOnInit(XTAL_INPUT); /* ANCHOR Controls the crystal oscillator */
   LORA_GET_REGISTER(RegTcxo);
 
   vPaDacInit(PA_DAC); /* Enables the +20dBm option on PA_BOOST pin */
@@ -1371,124 +1361,58 @@ void vLoraTransmit(u8 *pcTxBuffer, u8 ucTxMode)
   STM_LOGD("lora.c", "---------- Start Transmit ----------");
 
   vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
-  ucData = ucSpi1Read(RegOpMode);
-  printf("Init Standby Mode: RegOpMode = 0x%XH\r\n", ucData);
+  LORA_GET_REGISTER(RegOpMode);
 
   vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
   ucData = ucSpi1Read(RegFifoAddrPtr);
-  printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-  if (ucTxMode == TX_CONTINOUS) /* If Tx Coninuous Mode */
-  {
-    while (1)
-    {
-      for (i = 0u; i < PAYLOAD_LENGTH; i++)
-      {
-        ucData = *(pcTxBuffer + i);
-        vSpi1Write(RegFifo, *(pcTxBuffer + i));
-      }
-      ucData = ucSpi1Read(RegIrqFlags);
-      printf("Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
-
-      vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
-      ucData = ucSpi1Read(RegOpMode);
-      printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
-
-      ucIrqStatus = ucSpi1Read(RegIrqFlags);
-      printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
-
-      while ((ucIrqStatus & 0x08u) == 0u)
-        ; /* Wait for TxDone set */
-
-      ucData = ucSpi1Read(RegOpMode);
-      printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
-
-      if ((ucData & 0x01u) != 0u) /* If Automatic Mode change STANDBY */
-      {
-        printf("Automatic Mode change STANDBY from TX Continuous Mode\r\n");
-      }
-      else /* Automatic Mode change STANDBY */
-      {
-        printf("Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
-      }
-
-      /* Begin Read Data Transmit in FIFO */
-      vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-      ucData = ucSpi1Read(RegFifoAddrPtr);
-      printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-
-      ucData = ucSpi1Read(RegFifo); /* Check Destination Address */
-      printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-      ucData = ucSpi1Read(RegFifo); /* Check Source Address */
-      printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-      ucData = ucSpi1Read(RegFifo); /* Check Led Status */
-      printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
-      /* End Read Data Transmit in FIFO */
-
-      ucData = ucSpi1Read(RegIrqFlags);
-      printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
-
-      vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u)); /* Clear TxDone Flag */
-      ucData = ucSpi1Read(RegIrqFlags);
-      printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-    }
-  }
-  else /* If Tx Single Mode */
+  STM_LOGV("Transmit", "Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
+  do
   {
     for (i = 0u; i < PAYLOAD_LENGTH; i++)
     {
-      ucData = *(pcTxBuffer + i);
+      STM_LOGV("Transmit", "Send data: 0x%XH\r\n", *(pcTxBuffer + i));
       vSpi1Write(RegFifo, *(pcTxBuffer + i));
     }
-    ucData = ucSpi1Read(RegIrqFlags);
-    printf("Check TxDone Flag Before Transmit: RegIrqFlags = 0x%XH\r\n", ucData);
+
+    STM_LOGV("Transmit", "Check TxDone Flag Before Start Transmit: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
 
     vModeInit(TX_MODE); /* Init Module Lora into TX Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("Init Tx Mode: RegOpMode = 0x%XH\r\n", ucData);
+    STM_LOGV("Transmit", "Init Tx Mode: RegOpMode = 0x%XH\r\n", ucSpi1Read(RegOpMode));
 
     ucIrqStatus = ucSpi1Read(RegIrqFlags);
-    printf("Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
+    STM_LOGV("Transmit", "Check TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucIrqStatus);
 
     while ((ucIrqStatus & 0x08u) == 0u)
       ; /* Wait for TxDone set */
 
     ucData = ucSpi1Read(RegOpMode);
-    printf("Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
+    STM_LOGV("Transmit", "Check Automatic Mode change STANDBY: RegOpMode = 0x%XH\r\n", ucData);
 
-    if ((ucData & 0x01u) == 0u) /* Automatic Mode change STANDBY */
+    if ((ucData & 0x07) != 0b001) /* If Automatic Mode change STANDBY */
     {
-      printf("Automatic Mode change STANDBY fail from TX Single Mode\r\n");
+      STM_LOGE("TransmitErr", "Automatic Mode change STANDBY fail from TX Continuous Mode\r\n");
+      return;
     }
-    else /* Automatic Mode change STANDBY fail */
+    else /* Automatic Mode change STANDBY */
     {
-      printf("Automatic Mode change STANDBY from TX Single Mode\r\n");
+      STM_LOGV("Transmit", "Automatic Mode change STANDBY from TX Continuous Mode\r\n");
     }
 
     /* Begin Read Data Transmit in FIFO */
     vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR); /* Set FifoPtrAddr to FifoTxPtrBase */
-    ucData = ucSpi1Read(RegFifoAddrPtr);
-    printf("Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucData);
-
-    ucData = ucSpi1Read(RegFifo); /* Check Destination Address */
-    printf("Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-    ucData = ucSpi1Read(RegFifo); /* Check Source Address */
-    printf("Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucData);
-    ucData = ucSpi1Read(RegFifo); /* Check Led Status */
-    printf("Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucData);
+    STM_LOGV("Transmit", "Set Write Base Address to FifoAddrPtr: RegFifoAddrPtr = 0x%XH\r\n", ucSpi1Read(RegFifoAddrPtr));
+    /* Check Destination Address */
+    STM_LOGV("Transmit", "Check Destination Address in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
+    /* Check Source Address */
+    STM_LOGV("Transmit", "Check Source Address in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
+    /* Check Led Status */
+    STM_LOGV("Transmit", "Check Led Status in FiFo: RegFifo = 0x%XH\r\n", ucSpi1Read(RegFifo));
     /* End Read Data Transmit in FIFO */
-
-    ucData = ucSpi1Read(RegIrqFlags);
-    printf("Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);
+    STM_LOGV("Transmit", "Check TxDone Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
 
     vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x08u)); /* Clear TxDone Flag */
-    ucData = ucSpi1Read(RegIrqFlags);
-    printf("Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucData);
-
-    vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
-    ucData = ucSpi1Read(RegOpMode);
-    printf("Check Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
-    printf("Module switch to Sleep Mode\r\n");
-  }
+    STM_LOGV("Transmit", "Clear TxDone Flag: RegIrqFlags = 0x%XH\r\n", ucSpi1Read(RegIrqFlags));
+  } while (ucTxMode);
 
   STM_LOGD("lora.c", "---------- Finish Transmit ----------");
 }
