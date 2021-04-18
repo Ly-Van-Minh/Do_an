@@ -75,7 +75,7 @@
 #define RX_DONE                     0u
 #define TX_DONE                     1u
 #define CAD_DONE                    2u
-#define TCXO_INPUT                  0u
+#define XTAL_INPUT                  0u
 #define PA_DAC                      0x07u
 
 #define ACCESS_LORA_REGISTERS       0u

@@ -28,9 +28,9 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
     ucDataMatrix[0] = ucAddress;
     ucDataMatrix[1] = ucData;
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
+    HAL_Delay(5);
     ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)ucDataMatrix, sizeof(ucDataMatrix), 100));
-    HAL_Delay(10);
+    HAL_Delay(5);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
 }
 
@@ -44,10 +44,10 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
     uint8_t ucData = 0;
     ucAddress &= SPI1_READ; /* A wnr bit, which is 1 for write access and 0 for read access */
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
+    HAL_Delay(5);
     ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
     ERROR_CHECK(HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
-    HAL_Delay(10);
+    HAL_Delay(5);
     HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
     return ucData;
 }
@@ -1288,7 +1288,7 @@ void vLoraInit(void)
     ucData = ucSpi1Read(RegLna);
     printf("RegLna = 0x%XH\r\n", ucData);
 
-    vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* Write base address in FIFO data 
+    vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* Write base address in FIFO data
                                                buffer for TX modulator */
     ucData = ucSpi1Read(RegFifoTxBaseAddr);
     printf("RegFifoTxBaseAddr = 0x%XH\r\n", ucData);
@@ -1302,7 +1302,7 @@ void vLoraInit(void)
     ucData = ucSpi1Read(RegIrqFlagsMask);
     printf("RegIrqFlagsMask = 0x%XH\r\n", ucData);
 
-    vBandWidthInit(BANDWIDTH_125K);     /* Signal bandwidth: 250kHz */
+    vBandWidthInit(BANDWIDTH_125K);     /* Signal bandwidth: 62,5kHz */
     ucData = ucSpi1Read(RegModemConfig1);
     printf("RegModemConfig1 = 0x%XH\r\n", ucData);
 
@@ -1314,7 +1314,7 @@ void vLoraInit(void)
     ucData = ucSpi1Read(RegModemConfig1);
     printf("RegModemConfig1 = 0x%XH\r\n", ucData);
 
-    vSpreadingFactorInit(SPREADING_FACTOR_64); /* SF rate 64 chips / symbol */
+    vSpreadingFactorInit(SPREADING_FACTOR_64); /* SF rate 64 chips symbol */
     ucData = ucSpi1Read(RegModemConfig2);
     printf("RegModemConfig2 = 0x%XH\r\n", ucData);
 
@@ -1344,13 +1344,13 @@ void vLoraInit(void)
 
     vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH);  /* Maximum payload length */
     ucData = ucSpi1Read(RegMaxPayloadLength);
-    printf("RegMaxPayloadLength = 0x%XH\r\n", ucData); 
+    printf("RegMaxPayloadLength = 0x%XH\r\n", ucData);
     
     vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD);    /* Symbol periods between frequency hops */
-    ucData = ucSpi1Read(RegHopPeriod);  
+    ucData = ucSpi1Read(RegHopPeriod);
     printf("RegHopPeriod = 0x%XH\r\n", ucData);
     
-    vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the 
+    vLowDataRateOptimizeInit(LOW_DATA_RATE_OPTIMIZE); /*  Enabled; mandated for when the
                                                     symbol length exceeds16ms */
     ucData = ucSpi1Read(RegModemConfig3);
     printf("RegModemConfig3 = 0x%XH\r\n", ucData);
@@ -1360,7 +1360,7 @@ void vLoraInit(void)
     ucData = ucSpi1Read(RegModemConfig3);
     printf("RegModemConfig3 = 0x%XH\r\n", ucData);
 
-    vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE);   /* LoRa Detection Optimize 0x03 -> 
+    vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE);   /* LoRa Detection Optimize 0x03 ->
                                                        SF7 to SF12; 0x05 -> SF6 */
     ucData = ucSpi1Read(RegDetectOptimize);
     printf("RegDetectOptimize = 0x%XH\r\n", ucData);
@@ -1406,14 +1406,15 @@ void vLoraInit(void)
     ucData = ucSpi1Read(RegPll);
     printf("RegPll = 0x%XH\r\n", ucData);
 
-    vDio0MappingInit(CAD_DONE);
+    vDio0MappingInit(RX_DONE);
     ucData = ucSpi1Read(RegDioMapping1);
     printf("RegDioMapping1 = 0x%XH\r\n", ucData);
+
     // vMapPreambleDetect(PREAMBBLE_DETECT_INTERRUPT);
     // ucData = ucSpi1Read(RegTcxo);
     // printf("RegTcxo = 0x%XH\r\n", ucData);
 
-    vTcxoInputOnInit(TCXO_INPUT);   /* Controls the crystal oscillator */
+    vTcxoInputOnInit(XTAL_INPUT);   /* Controls the crystal oscillator */
     ucData = ucSpi1Read(RegTcxo);
     printf("RegTcxo = 0x%XH\r\n", ucData);
 
@@ -1638,7 +1639,7 @@ void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
                 printf("Data Receive Failed\r\n");
 
                 ucData = ucSpi1Read(RegIrqFlags);
-                printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);                
+                printf("Check PayloadCrcError Flag Before Clear: RegIrqFlags = 0x%XH\r\n", ucData);               
 
                 /* Clear PayloadCrcError Flag */
                 vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x20u));
@@ -1653,7 +1654,7 @@ void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
     else
     {
         /* Init Module Lora into RX Single Mode */
-        vModeInit(RXSINGLE_MODE); 
+        vModeInit(RXSINGLE_MODE);
         ucData = ucSpi1Read(RegOpMode);
         printf("Init Rx Single Mode: RegOpMode = 0x%XH\r\n", ucData);
 
@@ -1749,6 +1750,11 @@ void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode)
                 vSpi1Write(RegIrqFlags, (ucIrqStatus & 0x80u));
                 ucData = ucSpi1Read(RegIrqFlags);
                 printf("Clear Timeout Flag: RegIrqFlags = 0x%XH\r\n", ucData);
+
+                // /* Init Module Lora into Sleep Mode */
+                // vModeInit(SLEEP_MODE);
+                // ucData = ucSpi1Read(RegOpMode);
+                // printf("Init Sleep Mode: RegOpMode = 0x%XH\r\n", ucData);
             }
 
             /* If Automatic Mode chang STANBY fail */

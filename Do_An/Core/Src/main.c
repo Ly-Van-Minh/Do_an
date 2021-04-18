@@ -30,6 +30,7 @@
 #include "stm_log.h"
 #include "misc.h"
 #include "lora.h"
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,8 +56,11 @@ const char *MAIN_TAG = "MAIN_TAG";
 extern uint16_t lightSensorAdcValue;
 USART_CLI_HandleTypedef_t uartCliHandle;
 
+uint8_t ucCount = 0;
 uint8_t ucMatrix[PAYLOAD_LENGHT] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
 uint8_t ucMatrixReceive[PAYLOAD_LENGHT];
+
+bool bReceive = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,23 +101,24 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
+  MX_USART1_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
-//  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
-//  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
-//  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
-//  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
+  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
+  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
+  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
+  ERROR_CHECK(HAL_UART_Receive_IT(&huart1, (uint8_t *)(&(uartCliHandle._rxData)), 1));
     vLoraInit();
-    vLoraTransmit(ucMatrix, TX_CONTINOUS); 
+    // vLoraTransmit(ucMatrix, TX_CONTINOUS);
     // vLoraTransmit(ucMatrix, TX_SINGLE);
     // ucMatrix[0] = NODE2_ADDRESS;
     // ucMatrix[1] = GATEWAY_ADDRESS;
     // ucMatrix[2] = RELAY_OFF;
     // vLoraTransmit(ucMatrix, TX_SINGLE);
+    // vLoraReceive(ucMatrixReceive, RX_SINGLE);
     // vLoraReceive(ucMatrixReceive, RX_CONTINUOUS);
   /* USER CODE END 2 */
 
@@ -122,7 +127,13 @@ int main(void)
   while (1)
   {
     /* reset IWDG */
-    // HAL_IWDG_Refresh(&hiwdg);
+
+    if(bReceive == true)
+    {
+        vLoraReceive(ucMatrixReceive, RX_SINGLE);
+        bReceive = false;
+    }
+    HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -143,7 +154,7 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -157,7 +168,8 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -176,6 +188,12 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    printf("Count Value = %d\r\n", ucCount++);
+    bReceive = true;
+}
 void _Error_Handler(char *file, int line)
 {
   __disable_irq();
@@ -203,7 +221,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef USE_FULL_ASSERT
+#ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

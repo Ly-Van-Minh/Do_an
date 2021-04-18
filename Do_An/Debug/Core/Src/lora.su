@@ -70,5 +70,5 @@ lora.c:1169:6:vAgcStep4Init	24	static
 lora.c:1186:6:vAgcStep5Init	24	static
 lora.c:1203:6:vPllBandwidth	24	static
 lora.c:1220:6:vLoraInit	16	static
-lora.c:1440:6:vLoraTransmit	24	static
-lora.c:1575:6:vLoraReceive	32	static
+lora.c:1441:6:vLoraTransmit	24	static
+lora.c:1576:6:vLoraReceive	32	static
