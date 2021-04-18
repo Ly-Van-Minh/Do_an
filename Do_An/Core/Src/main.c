@@ -30,6 +30,7 @@
 #include "stm_log.h"
 #include "misc.h"
 #include "lora.h"
+#include "light-sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,13 +51,17 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+USART_CLI_HandleTypedef_t uartCliHandle;
 IWDG_HandleTypeDef hiwdg;
 const char *MAIN_TAG = "MAIN_TAG";
-extern uint16_t lightSensorAdcValue;
-USART_CLI_HandleTypedef_t uartCliHandle;
 
-uint8_t ucMatrix[PAYLOAD_LENGHT] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
-uint8_t ucMatrixReceive[PAYLOAD_LENGHT];
+MainAppTypeDef mInfo = {
+    .adcLightSensor = 0,
+    .isInit = false,
+};
+
+uint8_t ucMatrix[PAYLOAD_LENGTH] = {NODE1_ADDRESS, GATEWAY_ADDRESS, RELAY_ON};
+uint8_t ucMatrixReceive[PAYLOAD_LENGTH];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,8 +112,8 @@ int main(void)
   STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
   STM_LOGD(MAIN_TAG, "------START APPLICATION------");
   vLoraInit();
-  // vLoraTransmit(ucMatrix, TX_CONTINOUS);
   vLoraTransmit(ucMatrix, TX_SINGLE);
+  // vLoraTransmit(ucMatrix, TX_CONTINOUS);
   // ucMatrix[0] = NODE2_ADDRESS;
   // ucMatrix[1] = GATEWAY_ADDRESS;
   // ucMatrix[2] = RELAY_OFF;
@@ -121,7 +126,9 @@ int main(void)
   while (1)
   {
     /* reset IWDG */
-     HAL_IWDG_Refresh(&hiwdg);
+    // ADC_READ_LIGHTSENSOR();
+    HAL_Delay(1000);
+    HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

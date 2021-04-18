@@ -21,16 +21,16 @@ extern SPI_HandleTypeDef hspi1;
   * @retval None
   */
 
-void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
+void vSpi1Write(u8 ucAddress, u8 ucData)
 {
-  uint8_t ucDataMatrix[2];
+  u8 ucDataMatrix[2];
   ucAddress |= SPI1_WRITE; /* A wnr bit, which is 1 for write access and 0 for read access */
   ucDataMatrix[0] = ucAddress;
   ucDataMatrix[1] = ucData;
   HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-  HAL_Delay(10);
-  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)ucDataMatrix, sizeof(ucDataMatrix), 100));
-  HAL_Delay(10);
+  HAL_Delay(DELAY_SPI);
+  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (u8 *)ucDataMatrix, sizeof(ucDataMatrix), 100));
+  HAL_Delay(DELAY_SPI);
   HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
 }
 
@@ -39,15 +39,15 @@ void vSpi1Write(uint8_t ucAddress, uint8_t ucData)
   * @param ucAddress: Address registers or fifo of Lora Module
   * @retval ucData: Data contained in registers or fifo of Lora Module  
   */
-uint8_t ucSpi1Read(uint8_t ucAddress)
+u8 ucSpi1Read(u8 ucAddress)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucAddress &= SPI1_READ; /* A wnr bit, which is 1 for write access and 0 for read access */
   HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
-  HAL_Delay(10);
-  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (uint8_t *)&ucAddress, sizeof(ucAddress), 100));
-  ERROR_CHECK(HAL_SPI_Receive(&hspi1, (uint8_t *)&ucData, sizeof(ucData), 100));
-  HAL_Delay(10);
+  HAL_Delay(DELAY_SPI);
+  ERROR_CHECK(HAL_SPI_Transmit(&hspi1, (u8 *)&ucAddress, sizeof(ucAddress), 100));
+  ERROR_CHECK(HAL_SPI_Receive(&hspi1, (u8 *)&ucData, sizeof(ucData), 100));
+  HAL_Delay(DELAY_SPI);
   HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_SET);
   return ucData;
 }
@@ -57,9 +57,9 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
 //   * @param ucData: Value needed into FIFO
 //   * @retval Value of FIFO
 //   */
-// uint8_t ucReadFifo(void)
+// u8 ucReadFifo(void)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegFifo);
 //     return ucData;
 // }
@@ -69,7 +69,7 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
 //   * @param ucData: Value needed write into FIFO
 //   * @retval None
 //   */
-// void vWriteFifo(uint8_t ucData)
+// void vWriteFifo(u8 ucData)
 // {
 //     vSpi1Write(RegFifo, ucData);
 // }
@@ -79,9 +79,10 @@ uint8_t ucSpi1Read(uint8_t ucAddress)
   * @param ucMode: Value of mode: LoraTM if 1, FSK/OOK if 0
   * @retval None
   */
-void vLongRangeModeInit(uint8_t ucLongRangeMode)
+void vLongRangeModeInit(u8 ucLongRangeMode)
 {
-  uint8_t ucData = 0;
+  vModeInit(SLEEP_MODE);
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOpMode);
   ucData &= 0x7F;
   if (ucLongRangeMode == 0u || ucLongRangeMode == 1u)
@@ -96,9 +97,9 @@ void vLongRangeModeInit(uint8_t ucLongRangeMode)
   * @param ucAccessSharedReg: Value of mode
   * @retval None
   */
-void vAccessSharedRegInit(uint8_t ucAccessSharedReg)
+void vAccessSharedRegInit(u8 ucAccessSharedReg)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOpMode);
   ucData &= 0xBF;
   if (ucAccessSharedReg == 0u || ucAccessSharedReg == 1u)
@@ -113,9 +114,9 @@ void vAccessSharedRegInit(uint8_t ucAccessSharedReg)
   * @param ucLowFrequencyModeOn: Value of mode
   * @retval None
   */
-void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn)
+void vLowFrequencyModeOnInit(u8 ucLowFrequencyModeOn)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOpMode);
   ucData &= 0xF7;
   if (ucLowFrequencyModeOn == 0u || ucLowFrequencyModeOn == 1u)
@@ -130,9 +131,9 @@ void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn)
   * @param ucDeviceMode: Value of mode
   * @retval None
   */
-void vModeInit(uint8_t ucMode)
+void vModeInit(u8 ucMode)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOpMode);
   ucData &= 0xF8;
   if (ucMode >= 0u && ucMode <= 7u)
@@ -149,9 +150,9 @@ void vModeInit(uint8_t ucMode)
   */
 void vFrfInit(unsigned int uiFrf)
 {
-  vSpi1Write(RegFrfMsb, (uint8_t)(uiFrf >> 16));
-  vSpi1Write(RegFrfMid, (uint8_t)(uiFrf >> 8));
-  vSpi1Write(RegFrfLsb, (uint8_t)uiFrf);
+  vSpi1Write(RegFrfMsb, (u8)(uiFrf >> 16));
+  vSpi1Write(RegFrfMid, (u8)(uiFrf >> 8));
+  vSpi1Write(RegFrfLsb, (u8)uiFrf);
 }
 
 /**
@@ -159,9 +160,9 @@ void vFrfInit(unsigned int uiFrf)
   * @param ucPaSelect: Power Amplifier Value 
   * @retval None
   */
-void vPaSelectInit(uint8_t ucPaSelect)
+void vPaSelectInit(u8 ucPaSelect)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPaConfig);
   ucData &= 0x7F;
   if (ucPaSelect == 0u || ucPaSelect == 1u)
@@ -176,9 +177,9 @@ void vPaSelectInit(uint8_t ucPaSelect)
   * @param ucMaxPower: Max Output Power Value 
   * @retval None
   */
-void vMaxPowerInit(uint8_t ucMaxPower)
+void vMaxPowerInit(u8 ucMaxPower)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPaConfig);
   ucData &= 0x8F;
   if (ucMaxPower >= 0u && ucMaxPower <= 7u)
@@ -193,9 +194,9 @@ void vMaxPowerInit(uint8_t ucMaxPower)
   * @param ucOutputPower: Output Power Value 
   * @retval None
   */
-void vOutputPowerInit(uint8_t ucOutputPower)
+void vOutputPowerInit(u8 ucOutputPower)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPaConfig);
   ucData &= 0xF0;
   if (ucOutputPower >= 0u && ucOutputPower <= 15u)
@@ -210,9 +211,9 @@ void vOutputPowerInit(uint8_t ucOutputPower)
   * @param ucPaRamp: Ramp Value 
   * @retval None
   */
-void vPaRampInit(uint8_t ucPaRamp)
+void vPaRampInit(u8 ucPaRamp)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPaRamp);
   ucData &= 0xF0;
   if (ucPaRamp >= 0u && ucPaRamp <= 15u)
@@ -227,9 +228,9 @@ void vPaRampInit(uint8_t ucPaRamp)
   * @param ucOcpOn: OcpOn Value 
   * @retval None
   */
-void vOcpOnInit(uint8_t ucOcpOn)
+void vOcpOnInit(u8 ucOcpOn)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOcp);
   ucData &= 0xDF;
   if (ucOcpOn == 0u || ucOcpOn == 1u)
@@ -244,9 +245,9 @@ void vOcpOnInit(uint8_t ucOcpOn)
   * @param ucOcpTrim: OcpTrim Value
   * @retval None
   */
-void vOcpTrimInit(uint8_t ucOcpTrim)
+void vOcpTrimInit(u8 ucOcpTrim)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegOcp);
   ucData &= 0xE0;
   if (ucOcpTrim >= 0u && ucOcpTrim <= 31u)
@@ -261,9 +262,9 @@ void vOcpTrimInit(uint8_t ucOcpTrim)
   * @param ucLnaGain: Lna Gain Value
   * @retval None
   */
-void vLnaGainInit(uint8_t ucLnaGain)
+void vLnaGainInit(u8 ucLnaGain)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegLna);
   ucData &= 0x1F;
   if (ucLnaGain >= 1u && ucLnaGain <= 6u)
@@ -278,9 +279,9 @@ void vLnaGainInit(uint8_t ucLnaGain)
   * @param ucLnaBoostLf:  LNA Current Value
   * @retval None
   */
-void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
+void vLnaBoostLfInit(u8 ucLnaBoostLf)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegLna);
   ucData &= 0xE7;
   if (ucLnaBoostLf == 0u)
@@ -295,9 +296,9 @@ void vLnaBoostLfInit(uint8_t ucLnaBoostLf)
   * @param ucLnaBoostHf:  LNA Current Value
   * @retval None
   */
-void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
+void vLnaBoostHfInit(u8 ucLnaBoostHf)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegLna);
   ucData &= 0xFC;
   if (ucLnaBoostHf == 0u || ucLnaBoostHf == 3u)
@@ -312,9 +313,9 @@ void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
 //   * @param None
 //   * @retval Address Pointer Value
 //   */
-// uint8_t ucFifoAddrPtrRead(void)
+// u8 ucFifoAddrPtrRead(void)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegFifoAddrPtr);
 //     return ucData;
 // }
@@ -324,7 +325,7 @@ void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
 //   * @param ucFifoAddrPtr: FIFO Address Pointer Value
 //   * @retval None
 //   */
-// void vFifoAddrPtrWrite(uint8_t ucFifoAddrPtr)
+// void vFifoAddrPtrWrite(u8 ucFifoAddrPtr)
 // {
 //     vSpi1Write(RegFifoAddrPtr, ucFifoAddrPtr);
 // }
@@ -334,7 +335,7 @@ void vLnaBoostHfInit(uint8_t ucLnaBoostHf)
   * @param ucFifoTxBaseAddr: Base Address Value for Tx
   * @retval None
   */
-void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr)
+void vFifoTxBaseAddrInit(u8 ucFifoTxBaseAddr)
 {
   vSpi1Write(RegFifoTxBaseAddr, ucFifoTxBaseAddr);
 }
@@ -344,7 +345,7 @@ void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr)
   * @param ucFifoRxBaseAddr: Base Address Value for Rx
   * @retval None
   */
-void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr)
+void vFifoRxBaseAddrInit(u8 ucFifoRxBaseAddr)
 {
   vSpi1Write(RegFifoRxBaseAddr, ucFifoRxBaseAddr);
 }
@@ -354,16 +355,16 @@ void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr)
   * @param None
   * @retval Value of Start address (in data buffer) of last packet received
   */
-uint8_t ucFifoRxCurrentAddrRead(void)
+u8 ucFifoRxCurrentAddrRead(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegFifoRxCurrentAddr);
   return ucData;
 }
 
-// void vRxTimeoutMaskInit(uint8_t ucRxTimeoutMask)
+// void vRxTimeoutMaskInit(u8 ucRxTimeoutMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0x7F;
 //     if(ucRxTimeoutMask == 0u || ucRxTimeoutMask == 1u)
@@ -373,9 +374,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vRxDoneMaskInit(uint8_t ucRxDoneMask)
+// void vRxDoneMaskInit(u8 ucRxDoneMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xBF;
 //     if(ucRxDoneMask == 0u || ucRxDoneMask == 1u)
@@ -385,9 +386,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vPayloadCrcErrorMaskInit(uint8_t ucPayloadCrcErrorMask)
+// void vPayloadCrcErrorMaskInit(u8 ucPayloadCrcErrorMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xDF;
 //     if(ucPayloadCrcErrorMask == 0u || ucPayloadCrcErrorMask == 1u)
@@ -397,9 +398,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vValidHeaderMaskInit(uint8_t ucValidHeaderMask)
+// void vValidHeaderMaskInit(u8 ucValidHeaderMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xEF;
 //     if(ucValidHeaderMask == 0u || ucValidHeaderMask == 1u)
@@ -409,9 +410,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vTxDoneMaskInit(uint8_t ucTxDoneMask)
+// void vTxDoneMaskInit(u8 ucTxDoneMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xF7;
 //     if(ucTxDoneMask == 0u || ucTxDoneMask == 1u)
@@ -421,9 +422,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vCadDoneMaskInit(uint8_t ucCadDoneMask)
+// void vCadDoneMaskInit(u8 ucCadDoneMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xFB;
 //     if(ucCadDoneMask == 0u || ucCadDoneMask == 1u)
@@ -433,9 +434,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vFhssChangeChannelMaskInit(uint8_t ucFhssChangeChannelMask)
+// void vFhssChangeChannelMaskInit(u8 ucFhssChangeChannelMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xFD;
 //     if(ucFhssChangeChannelMask == 0u || ucFhssChangeChannelMask == 1u)
@@ -445,9 +446,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
 //     }
 // }
 
-// void vCadDetectedMaskInit(uint8_t ucCadDetectedMask)
+// void vCadDetectedMaskInit(u8 ucCadDetectedMask)
 // {
-//     uint8_t ucData = 0;
+//     u8 ucData = 0;
 //     ucData = ucSpi1Read(RegIrqFlagsMask);
 //     ucData &= 0xFE;
 //     if(ucCadDetectedMask == 0u || ucCadDetectedMask == 1u)
@@ -462,9 +463,9 @@ uint8_t ucFifoRxCurrentAddrRead(void)
   * @param ucIrqFlagsMask: Flag Mask Value
   * @retval None
   */
-void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask)
+void vIrqFlagsMaskInit(u8 ucIrqFlagsMask)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegIrqFlagsMask);
   ucData |= ucIrqFlagsMask;
   vSpi1Write(RegIrqFlagsMask, ucData);
@@ -475,9 +476,9 @@ void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask)
   * @param None
   * @retval Status Interrupt Flags
   */
-uint8_t ucIrqFlagsRead(void)
+u8 ucIrqFlagsRead(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegIrqFlags);
   return ucData;
 }
@@ -487,9 +488,9 @@ uint8_t ucIrqFlagsRead(void)
   * @param ucIrqFlags: Value of Flags need clear
   * @retval None
   */
-void vIrqFlagsClear(uint8_t ucIrqFlags)
+void vIrqFlagsClear(u8 ucIrqFlags)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegIrqFlags);
   ucData |= ucIrqFlags;
   vSpi1Write(RegIrqFlags, ucData);
@@ -500,9 +501,9 @@ void vIrqFlagsClear(uint8_t ucIrqFlags)
   * @param None
   * @retval Number of payload bytes
   */
-uint8_t ucFifoRxBytesNbRead(void)
+u8 ucFifoRxBytesNbRead(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegRxNbBytes);
   return ucData;
 }
@@ -512,11 +513,11 @@ uint8_t ucFifoRxBytesNbRead(void)
   * @param None
   * @retval Number of valid headers received
   */
-uint16_t usValidHeaderCntRead(void)
+u16 usValidHeaderCntRead(void)
 {
-  uint16_t ucData = 0;
-  ucData = ((uint16_t)ucSpi1Read(RegRxHeaderCntValueMsb) << 8);
-  ucData |= (uint16_t)ucSpi1Read(RegRxHeaderCntValueLsb);
+  u16 ucData = 0;
+  ucData = ((u16)ucSpi1Read(RegRxHeaderCntValueMsb) << 8);
+  ucData |= (u16)ucSpi1Read(RegRxHeaderCntValueLsb);
   return ucData;
 }
 
@@ -525,11 +526,11 @@ uint16_t usValidHeaderCntRead(void)
   * @param None
   * @retval Number of valid packets received
   */
-uint16_t usValidPacketCntRead(void)
+u16 usValidPacketCntRead(void)
 {
-  uint16_t ucData = 0;
-  ucData = ((uint16_t)ucSpi1Read(RegRxPacketCntValueMsb) << 8);
-  ucData |= (uint16_t)ucSpi1Read(RegRxPacketCntValueLsb);
+  u16 ucData = 0;
+  ucData = ((u16)ucSpi1Read(RegRxPacketCntValueMsb) << 8);
+  ucData |= (u16)ucSpi1Read(RegRxPacketCntValueLsb);
   return ucData;
 }
 
@@ -538,9 +539,9 @@ uint16_t usValidPacketCntRead(void)
   * @param None
   * @retval Value Coding rate of last header received
   */
-uint8_t ucRxCodingRateRead(void)
+u8 ucRxCodingRateRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = (ucSpi1Read(RegModemStat) >> 5);
   return ucData;
 }
@@ -550,9 +551,9 @@ uint8_t ucRxCodingRateRead(void)
   * @param None
   * @retval Value of Modem Status
   */
-uint8_t ucModemStatusRead(void)
+u8 ucModemStatusRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = 0x1F & ucSpi1Read(RegModemStat);
   return ucData;
 }
@@ -562,9 +563,9 @@ uint8_t ucModemStatusRead(void)
   * @param None
   * @retval Value Estimation of SNR on last packet received
   */
-uint8_t ucPacketSnrRead(void)
+u8 ucPacketSnrRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = ucSpi1Read(RegPktSnrValue);
   return ucData;
 }
@@ -574,9 +575,9 @@ uint8_t ucPacketSnrRead(void)
   * @param None
   * @retval Value RSSI of the latest packet received
   */
-uint8_t ucPacketRssiRead(void)
+u8 ucPacketRssiRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = ucSpi1Read(RegPktRssiValue);
   return ucData;
 }
@@ -586,9 +587,9 @@ uint8_t ucPacketRssiRead(void)
   * @param None
   * @retval Current RSSI value
   */
-uint8_t ucRssiRead(void)
+u8 ucRssiRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = ucSpi1Read(RegRssiValue);
   return ucData;
 }
@@ -598,9 +599,9 @@ uint8_t ucRssiRead(void)
   * @param None
   * @retval Status PLL 
   */
-uint8_t ucPllTimeoutRead(void)
+u8 ucPllTimeoutRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = (ucSpi1Read(RegHopChannel) >> 7);
   return ucData;
 }
@@ -610,9 +611,9 @@ uint8_t ucPllTimeoutRead(void)
   * @param None
   * @retval Status CRC 
   */
-uint8_t ucCrcOnPayloadread(void)
+u8 ucCrcOnPayloadread(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = 0x01 & (ucSpi1Read(RegHopChannel) >> 6);
   return ucData;
 }
@@ -622,9 +623,9 @@ uint8_t ucCrcOnPayloadread(void)
   * @param None
   * @retval Current value of frequency hopping channel 
   */
-uint8_t ucFhssPresentChannelRead(void)
+u8 ucFhssPresentChannelRead(void)
 {
-  uint8_t ucData;
+  u8 ucData;
   ucData = 0x3F & ucSpi1Read(RegHopChannel);
   return ucData;
 }
@@ -634,9 +635,9 @@ uint8_t ucFhssPresentChannelRead(void)
   * @param ucBandWidth: BandWidth Value
   * @retval None 
   */
-void vBandWidthInit(uint8_t ucBandWidth)
+void vBandWidthInit(u8 ucBandWidth)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig1);
   ucData &= 0x0F;
   if (ucBandWidth >= 0u && ucBandWidth <= 9u)
@@ -651,9 +652,9 @@ void vBandWidthInit(uint8_t ucBandWidth)
   * @param ucCodingRate: Error coding rate Value
   * @retval None 
   */
-void vCodingRateInit(uint8_t ucCodingRate)
+void vCodingRateInit(u8 ucCodingRate)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig1);
   ucData &= 0xF1;
   if (ucCodingRate >= 1u && ucCodingRate <= 4u)
@@ -668,9 +669,9 @@ void vCodingRateInit(uint8_t ucCodingRate)
   * @param ucHeaderMode: Error coding rate Value
   * @retval None 
   */
-void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode)
+void vImplicitHeaderModeOnInit(u8 ucHeaderMode)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig1);
   ucData &= 0xFE;
   if (ucHeaderMode == 0u || ucHeaderMode == 1u)
@@ -685,9 +686,9 @@ void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode)
   * @param ucSpreadingFactor: Spreading Factor Value
   * @retval None 
   */
-void vSpreadingFactorInit(uint8_t ucSpreadingFactor)
+void vSpreadingFactorInit(u8 ucSpreadingFactor)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig2);
   ucData &= 0x0F;
   if (ucSpreadingFactor >= 6u && ucSpreadingFactor <= 12u)
@@ -702,9 +703,9 @@ void vSpreadingFactorInit(uint8_t ucSpreadingFactor)
   * @param ucTxContinuousMode: Mode Value
   * @retval None 
   */
-void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
+void vTxContinuousModeInit(u8 ucTxContinuousMode)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig2);
   ucData &= 0xF7;
   if (ucTxContinuousMode == 0u || ucTxContinuousMode == 1u)
@@ -719,9 +720,9 @@ void vTxContinuousModeInit(uint8_t ucTxContinuousMode)
   * @param ucRxPayloadCrcOn: CRCON Value
   * @retval None 
   */
-void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn)
+void vRxPayloadCrcOnInit(u8 ucRxPayloadCrcOn)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig2);
   ucData &= 0xFB;
   if (ucRxPayloadCrcOn == 0u || ucRxPayloadCrcOn == 1u)
@@ -736,14 +737,14 @@ void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn)
   * @param ucSymbTimeout: Symbols Time Value
   * @retval None 
   */
-void vSymbTimeoutInit(uint16_t ucSymbTimeout)
+void vSymbTimeoutInit(u16 ucSymbTimeout)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig2);
   ucData &= 0xFC;
-  ucData |= ((0x03) & (uint8_t)(ucSymbTimeout >> 8));
+  ucData |= ((0x03) & (u8)(ucSymbTimeout >> 8));
   vSpi1Write(RegModemConfig2, ucData);
-  vSpi1Write(RegSymbTimeoutLsb, (uint8_t)ucSymbTimeout);
+  vSpi1Write(RegSymbTimeoutLsb, (u8)ucSymbTimeout);
 }
 
 /**
@@ -751,10 +752,10 @@ void vSymbTimeoutInit(uint16_t ucSymbTimeout)
   * @param ucPreambleLength: Preamble Length Value
   * @retval None
   */
-void vPreambleLengthInit(uint16_t ucPreambleLength)
+void vPreambleLengthInit(u16 ucPreambleLength)
 {
-  vSpi1Write(RegPreambleMsb, (uint8_t)(ucPreambleLength >> 8));
-  vSpi1Write(RegPreambleLsb, (uint8_t)(ucPreambleLength));
+  vSpi1Write(RegPreambleMsb, (u8)(ucPreambleLength >> 8));
+  vSpi1Write(RegPreambleLsb, (u8)(ucPreambleLength));
 }
 
 /**
@@ -762,7 +763,7 @@ void vPreambleLengthInit(uint16_t ucPreambleLength)
   * @param ucPayloadLength: Payload Length Value
   * @retval None
   */
-void vPayloadLengthInit(uint8_t ucPayloadLength)
+void vPayloadLengthInit(u8 ucPayloadLength)
 {
   vSpi1Write(RegPayloadLength, ucPayloadLength);
 }
@@ -772,7 +773,7 @@ void vPayloadLengthInit(uint8_t ucPayloadLength)
   * @param ucPayloadMaxLength: Payload Max Length Value
   * @retval None
   */
-void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength)
+void vPayloadMaxLengthInit(u8 ucPayloadMaxLength)
 {
   vSpi1Write(RegMaxPayloadLength, ucPayloadMaxLength);
 }
@@ -782,7 +783,7 @@ void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength)
   * @param ucFreqHoppingPeriod: Payload Max Length Value
   * @retval None
   */
-void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod)
+void vFreqHoppingPeriodInit(u8 ucFreqHoppingPeriod)
 {
   vSpi1Write(RegHopPeriod, ucFreqHoppingPeriod);
 }
@@ -792,9 +793,9 @@ void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod)
   * @param None
   * @retval Address of last byte written by Lora receiver
   */
-uint8_t ucFifoRxByteAddrPtr(void)
+u8 ucFifoRxByteAddrPtr(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegFifoRxByteAddr);
   return ucData;
 }
@@ -804,9 +805,9 @@ uint8_t ucFifoRxByteAddrPtr(void)
   * @param ucLowDataRateOptimize: Low Data Rate Optimize Value to Disable or Enable 
   * @retval None
   */
-void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize)
+void vLowDataRateOptimizeInit(u8 ucLowDataRateOptimize)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig3);
   ucData &= 0xF7;
   if (ucLowDataRateOptimize == 0u || ucLowDataRateOptimize == 1u)
@@ -821,9 +822,9 @@ void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize)
   * @param ucAgcAutoOn: Value to Disable or Enable 
   * @retval None
   */
-void vAgcAutoOnInit(uint8_t ucAgcAutoOn)
+void vAgcAutoOnInit(u8 ucAgcAutoOn)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegModemConfig3);
   ucData &= 0xFB;
   if (ucAgcAutoOn == 0u || ucAgcAutoOn == 1u)
@@ -852,9 +853,9 @@ unsigned int uiFreqError(void)
   * @param None
   * @retval  Wideband RSSI measurement Value
   */
-uint8_t ucRssiWidebandInit(void)
+u8 ucRssiWidebandInit(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegRssiWideband);
   return ucData;
 }
@@ -864,9 +865,9 @@ uint8_t ucRssiWidebandInit(void)
   * @param ucDetectionOptimize: Detection Optimize Value 
   * @retval None
   */
-void vDetectionOptimizeInit(uint8_t ucDetectionOptimize)
+void vDetectionOptimizeInit(u8 ucDetectionOptimize)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDetectOptimize);
   ucData &= 0xF8;
   if (ucDetectionOptimize == 3u || ucDetectionOptimize == 5u)
@@ -881,9 +882,9 @@ void vDetectionOptimizeInit(uint8_t ucDetectionOptimize)
   * @param ucInvertIQ: Invert I and Q signals Value 
   * @retval None
   */
-void vInvertIQInit(uint8_t ucInvertIQ)
+void vInvertIQInit(u8 ucInvertIQ)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegInvertIQ);
   ucData &= 0xBF;
   if (ucInvertIQ == 0u || ucInvertIQ == 1u)
@@ -898,7 +899,7 @@ void vInvertIQInit(uint8_t ucInvertIQ)
   * @param ucDetectionThreshold: LoRa detection threshold Value 
   * @retval None
   */
-void vDetectionThresholdInit(uint8_t ucDetectionThreshold)
+void vDetectionThresholdInit(u8 ucDetectionThreshold)
 {
   if (ucDetectionThreshold == 0x0A || ucDetectionThreshold == 0x0C)
   {
@@ -911,7 +912,7 @@ void vDetectionThresholdInit(uint8_t ucDetectionThreshold)
   * @param ucSyncWord: Sync Word Value, Value 0x34 is reserved for LoRaWAN networks 
   * @retval None
   */
-void vSyncWordInit(uint8_t ucSyncWord)
+void vSyncWordInit(u8 ucSyncWord)
 {
   vSpi1Write(RegSyncWord, ucSyncWord);
 }
@@ -921,9 +922,9 @@ void vSyncWordInit(uint8_t ucSyncWord)
   * @param ucDio0Mapping: Dio0 Mapping Value
   * @retval None
   */
-void vDio0MappingInit(uint8_t ucDio0Mapping)
+void vDio0MappingInit(u8 ucDio0Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping1);
   ucData &= 0x3F;
   if (ucDio0Mapping >= 0u && ucDio0Mapping <= 3u)
@@ -938,9 +939,9 @@ void vDio0MappingInit(uint8_t ucDio0Mapping)
   * @param ucDio1Mapping: DIO1 Mapping Value
   * @retval None
   */
-void vDio1MappingInit(uint8_t ucDio1Mapping)
+void vDio1MappingInit(u8 ucDio1Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping1);
   ucData &= 0xCF;
   if (ucDio1Mapping >= 0u && ucDio1Mapping <= 3u)
@@ -955,9 +956,9 @@ void vDio1MappingInit(uint8_t ucDio1Mapping)
   * @param ucDio2Mapping: DIO2 Mapping Value
   * @retval None
   */
-void vDio2MappingInit(uint8_t ucDio2Mapping)
+void vDio2MappingInit(u8 ucDio2Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping1);
   ucData &= 0xF3;
   if (ucDio2Mapping >= 0u && ucDio2Mapping <= 3u)
@@ -972,9 +973,9 @@ void vDio2MappingInit(uint8_t ucDio2Mapping)
   * @param ucDio3Mapping: DIO3 Mapping Value
   * @retval None
   */
-void vDio3MappingInit(uint8_t ucDio3Mapping)
+void vDio3MappingInit(u8 ucDio3Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping1);
   ucData &= 0xFC;
   if (ucDio3Mapping >= 0u && ucDio3Mapping <= 3u)
@@ -989,9 +990,9 @@ void vDio3MappingInit(uint8_t ucDio3Mapping)
   * @param ucDio4Mapping: DIO4 Mapping Value
   * @retval None
   */
-void vDio4MappingInit(uint8_t ucDio4Mapping)
+void vDio4MappingInit(u8 ucDio4Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping2);
   ucData &= 0x3F;
   if (ucDio4Mapping >= 0u && ucDio4Mapping <= 3u)
@@ -1006,9 +1007,9 @@ void vDio4MappingInit(uint8_t ucDio4Mapping)
   * @param ucDio4Mapping: DIO5 Mapping Value
   * @retval None
   */
-void vDio5MappingInit(uint8_t ucDio5Mapping)
+void vDio5MappingInit(u8 ucDio5Mapping)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping2);
   ucData &= 0xCF;
   if (ucDio5Mapping >= 0u && ucDio5Mapping <= 3u)
@@ -1024,9 +1025,9 @@ void vDio5MappingInit(uint8_t ucDio5Mapping)
   * @param ucMapPreambleDetect: Map Preamble Detect Value
   * @retval None
   */
-void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect)
+void vMapPreambleDetectInit(u8 ucMapPreambleDetect)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegDioMapping2);
   ucData &= 0xFE;
   if (ucMapPreambleDetect == 0u || ucMapPreambleDetect == 1u)
@@ -1041,9 +1042,9 @@ void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect)
   * @param None
   * @retval  Version code of the chip Value
   */
-uint8_t ucVersionRead(void)
+u8 ucVersionRead(void)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegVersion);
   return ucData;
 }
@@ -1053,9 +1054,9 @@ uint8_t ucVersionRead(void)
   * @param ucTcxoInputOn: Tcxo Input On Value
   * @retval None
   */
-void vTcxoInputOnInit(uint8_t ucTcxoInputOn)
+void vTcxoInputOnInit(u8 ucTcxoInputOn)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegTcxo);
   ucData &= 0xEF;
   if (ucTcxoInputOn == 0u || ucTcxoInputOn == 1u)
@@ -1070,9 +1071,9 @@ void vTcxoInputOnInit(uint8_t ucTcxoInputOn)
   * @param ucPaDac: Pa Dac Value
   * @retval None
   */
-void vPaDacInit(uint8_t ucPaDac)
+void vPaDacInit(u8 ucPaDac)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPaDac);
   ucData &= 0xF8;
   if (ucPaDac == 4u || ucPaDac == 7u)
@@ -1088,7 +1089,7 @@ void vPaDacInit(uint8_t ucPaDac)
   * @param ucFormerTemp: Temperature Value
   * @retval None
   */
-void vFormerTempInit(uint8_t ucFormerTemp)
+void vFormerTempInit(u8 ucFormerTemp)
 {
   vSpi1Write(RegFormerTemp, ucFormerTemp);
 }
@@ -1098,9 +1099,9 @@ void vFormerTempInit(uint8_t ucFormerTemp)
   * @param ucAgcReferenceLevel: Agc Reference Level Value
   * @retval None
   */
-void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel)
+void vAgcReferenceLevelInit(u8 ucAgcReferenceLevel)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcRef);
   ucData &= 0xC0;
   if (ucAgcReferenceLevel >= 0x00 && ucAgcReferenceLevel <= 0x3F)
@@ -1115,9 +1116,9 @@ void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel)
   * @param ucAgcStep1: Agc Step1 Value
   * @retval None
   */
-void vAgcStep1Init(uint8_t ucAgcStep1)
+void vAgcStep1Init(u8 ucAgcStep1)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcThresh1);
   ucData &= 0xE0;
   if (ucAgcStep1 >= 0x00 && ucAgcStep1 <= 0x1F)
@@ -1132,9 +1133,9 @@ void vAgcStep1Init(uint8_t ucAgcStep1)
   * @param ucAgcStep2: Agc Step2 Value
   * @retval None
   */
-void vAgcStep2Init(uint8_t ucAgcStep2)
+void vAgcStep2Init(u8 ucAgcStep2)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcThresh2);
   ucData &= 0x0F;
   if (ucAgcStep2 >= 0x00 && ucAgcStep2 <= 0x0F)
@@ -1149,9 +1150,9 @@ void vAgcStep2Init(uint8_t ucAgcStep2)
   * @param ucAgcStep3: Agc Step3 Value
   * @retval None
   */
-void vAgcStep3Init(uint8_t ucAgcStep3)
+void vAgcStep3Init(u8 ucAgcStep3)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcThresh2);
   ucData &= 0xF0;
   if (ucAgcStep3 >= 0x00 && ucAgcStep3 <= 0x0F)
@@ -1166,9 +1167,9 @@ void vAgcStep3Init(uint8_t ucAgcStep3)
   * @param ucAgcStep4: Agc Step4 Value
   * @retval None
   */
-void vAgcStep4Init(uint8_t ucAgcStep4)
+void vAgcStep4Init(u8 ucAgcStep4)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcThresh3);
   ucData &= 0x0F;
   if (ucAgcStep4 >= 0x00 && ucAgcStep4 <= 0x0F)
@@ -1183,9 +1184,9 @@ void vAgcStep4Init(uint8_t ucAgcStep4)
   * @param ucAgcStep5: Agc Step5 Value
   * @retval None
   */
-void vAgcStep5Init(uint8_t ucAgcStep5)
+void vAgcStep5Init(u8 ucAgcStep5)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegAgcThresh3);
   ucData &= 0xF0;
   if (ucAgcStep5 >= 0x00 && ucAgcStep5 <= 0x0F)
@@ -1200,9 +1201,9 @@ void vAgcStep5Init(uint8_t ucAgcStep5)
   * @param ucPllBandwidth: Pll Bandwidth Value
   * @retval None
   */
-void vPllBandwidth(uint8_t ucPllBandwidth)
+void vPllBandwidth(u8 ucPllBandwidth)
 {
-  uint8_t ucData = 0;
+  u8 ucData = 0;
   ucData = ucSpi1Read(RegPll);
   ucData &= 0x3F;
   if (ucPllBandwidth >= 0u && ucPllBandwidth <= 3u)
@@ -1221,93 +1222,76 @@ void vLoraInit(void)
 {
   STM_LOGD("lora.c", "---------- LoraInit Start ----------");
 
-  vModeInit(SLEEP_MODE); /* Init Module Lora into Sleep Mode */
-  LORA_GET_REGISTER(RegOpMode);
-
-  vLongRangeModeInit(LORA_MODE); /* Init Module Lora into Lora TM Mode */
+  vLongRangeModeInit(LORA_MODE); /* ANCHOR CHECKED Init Module Lora into Lora TM Mode */
   LORA_GET_REGISTER(RegOpMode);
 
   vModeInit(STDBY_MODE); /* Init Module Lora into Standby Mode */
+  vAccessSharedRegInit(ACCESS_LORA_REGISTERS); /* ANCHOR CHECKED Access LoRa registers page 0x0D: 0x3F */
+  vLowFrequencyModeOnInit(ACCESS_LOW_FREQUENCY_MODE); /* CHECKED Access Low Frequency Mode registers */
   LORA_GET_REGISTER(RegOpMode);
 
-  vAccessSharedRegInit(ACCESS_LORA_REGISTERS); /* Access LoRa registers page 0x0D: 0x3F */
-  LORA_GET_REGISTER(RegOpMode);
-
-  vLowFrequencyModeOnInit(ACCESS_LOW_FREQUENCY_MODE); /* Access Low Frequency Mode registers */
-  LORA_GET_REGISTER(RegOpMode);
-
-  vFrfInit(RF_FREQUENCY); /* Init RF carrier frequency */
+  vFrfInit(RF_FREQUENCY); /* ANCHOR CHECKED Init RF carrier frequency */
   LORA_GET_REGISTER(RegFrfMsb);
   LORA_GET_REGISTER(RegFrfMid);
   LORA_GET_REGISTER(RegFrfLsb);
 
-  vPaSelectInit(PA_BOOST); /* Output power is limited to +20 dBm */
+  vPaSelectInit(PA_BOOST); /* ANCHOR CHECKEDOutput power is limited to +20 dBm */
+  // vMaxPowerInit(MAX_POWER);
+  vOutputPowerInit(OUTPUT_POWER); /* ANCHOR CHECKEDPout=17-(15-OutputPower) */
   LORA_GET_REGISTER(RegPaConfig);
 
-  vMaxPowerInit(MAX_POWER);
-  LORA_GET_REGISTER(RegPaConfig);
-
-  vOutputPowerInit(OUTPUT_POWER); /* Pout=17-(15-OutputPower) */
-  LORA_GET_REGISTER(RegPaConfig);
-
-  vPaRampInit(PA_RAMP);
+  // vPaRampInit(PA_RAMP);
   LORA_GET_REGISTER(RegPaRamp);
 
-  vOcpOnInit(OCP_ON); /* OCP enabled */
+
+  // vOcpOnInit(OCP_ON); /* OCP enabled */
+  vOcpTrimInit(OCP_TRIM); /* CHECKED Trimming of OCP current: Imax = 240mA */
   LORA_GET_REGISTER(RegOcp);
+  STM_LOGD("CHECKED", "--------------------");
 
-  vOcpTrimInit(OCP_TRIM); /* Trimming of OCP current: Imax = 240mA */
-  LORA_GET_REGISTER(RegOcp);
-
-  vLnaGainInit(G1); /* LNA gain setting: G1 = maximum gain */
-  LORA_GET_REGISTER(RegLna);
-
-  vLnaBoostLfInit(LNA_BOOST_LF); /* Low Frequency (RFI_LF) LNA current adjustment Default LNA current */
+  // vLnaGainInit(G1); /* LNA gain setting: G1 = maximum gain */
+  // vLnaBoostLfInit(LNA_BOOST_LF); /* Low Frequency (RFI_LF) LNA current adjustment Default LNA current */
   LORA_GET_REGISTER(RegLna);
 
   vLnaBoostHfInit(LNA_BOOST_HF); /* High Frequency (RFI_HF) LNA current adjustment Boost on, 150% LNA current */
   LORA_GET_REGISTER(RegLna);
 
-  vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* Write base address in FIFO data buffer for TX modulator */
+  vFifoTxBaseAddrInit(FIFO_TX_BASE_ADDR); /* ANCHOR Write base address in FIFO data buffer for TX modulator */
   LORA_GET_REGISTER(RegFifoTxBaseAddr);
 
-  vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* Read base address in FIFO data buffer for RX demodulator */
+  vFifoRxBaseAddrInit(FIFO_RX_BASE_ADDR); /* ANCHOR Read base address in FIFO data buffer for RX demodulator */
   LORA_GET_REGISTER(RegFifoRxBaseAddr);
 
-  vIrqFlagsMaskInit(IRQ_FLAGS_MASK); /* Disable all interrupts mask */
+  vIrqFlagsMaskInit(IRQ_FLAGS_MASK); /* ANCHOR Disable all interrupts mask */
   LORA_GET_REGISTER(RegIrqFlagsMask);
 
-  vBandWidthInit(BANDWIDTH_125K); /* Signal bandwidth: 250kHz */
+  // vBandWidthInit(BANDWIDTH_125K); /* ANCHOR CHECKED Signal bandwidth: 250kHz */
+  vCodingRateInit(CODING_RATE_4_5); /* ANCHOR Error coding rate 4/5 */
+  vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* ANCHOR Init Implicit Header mode */
+
   LORA_GET_REGISTER(RegModemConfig1);
 
-  vCodingRateInit(CODING_RATE_4_5); /* Error coding rate 4/5 */
-  LORA_GET_REGISTER(RegModemConfig1);
-
-  vImplicitHeaderModeOnInit(IMPLICIT_HEADER); /* Init Implicit Header mode */
-  LORA_GET_REGISTER(RegModemConfig1);
-
-  vSpreadingFactorInit(SPREADING_FACTOR_6); /* SF rate 64 chips / symbol */
+  vSpreadingFactorInit(SPREADING_FACTOR_6_64); /* ANCHOR SF rate 64 chips / symbol */
   LORA_GET_REGISTER(RegModemConfig2);
 
-  vTxContinuousModeInit(TX_NORMAL_MODE); /* Normal mode, a single packet is sent */
+  vTxContinuousModeInit(TX_NORMAL_MODE); /* ANCHOR Normal mode, a single packet is sent */
   LORA_GET_REGISTER(RegModemConfig2);
 
-  vRxPayloadCrcOnInit(CRC_ENABLE); /* Enable CRC generation and check on payload */
+  vRxPayloadCrcOnInit(CRC_ENABLE); /* ANCHOR Enable CRC generation and check on payload */
   LORA_GET_REGISTER(RegModemConfig2);
 
-  vSymbTimeoutInit(RX_TIMEOUT); /* RX operation time-out */
+  vSymbTimeoutInit(RX_TIMEOUT); /* ANCHOR RX operation time-out */
   LORA_GET_REGISTER(RegModemConfig2);
   LORA_GET_REGISTER(RegSymbTimeoutLsb);
 
-  vPreambleLengthInit(PREAMBLE_LENGTH); /* Preamble length  = PreambleLength + 4.25 Symbols */
-  LORA_GET_REGISTER(RegPreambleMsb);
+  // vPreambleLengthInit(PREAMBLE_LENGTH); /* ANCHOR Preamble length = PreambleLength + 4.25 Symbols */
+  // LORA_GET_REGISTER(RegPreambleMsb);
+  // LORA_GET_REGISTER(RegPreambleLsb);
 
-  LORA_GET_REGISTER(RegPreambleLsb);
-
-  vPayloadLengthInit(PAYLOAD_LENGHT); /* Init Payload length */
+  vPayloadLengthInit(PAYLOAD_LENGTH); /* ANCHOR Init Payload length */
   LORA_GET_REGISTER(RegPayloadLength);
 
-  vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH); /* Maximum payload length */
+  vPayloadMaxLengthInit(PAYLOAD_MAX_LENGTH); /* ANCHOR Maximum payload length */
   LORA_GET_REGISTER(RegMaxPayloadLength);
 
   vFreqHoppingPeriodInit(FREQ_HOPPING_PERIOD); /* Symbol periods between frequency hops */
@@ -1322,14 +1306,14 @@ void vLoraInit(void)
   vDetectionOptimizeInit(LORA_DETECTION_OPTIMIZE); /* LoRa Detection Optimize 0x03 -> SF7 to SF12; 0x05 -> SF6 */
   LORA_GET_REGISTER(RegDetectOptimize);
 
-  vInvertIQInit(INVERT_IQ); /* Invert the LoRa I and Q signals */
+  vInvertIQInit(INVERT_IQ); /* ANCHOR Invert the LoRa I and Q signals */
   LORA_GET_REGISTER(RegInvertIQ);
   LORA_GET_REGISTER(RegInvertIQ);
 
-  vDetectionThresholdInit(LORA_DETECTION_THRESHOLD); /* LoRa detection threshold 0x0A -> SF7 to SF12; 0x0C -> SF6 */
+  vDetectionThresholdInit(LORA_DETECTION_THRESHOLD); /* ANCHOR LoRa detection threshold 0x0A -> SF7 to SF12; 0x0C -> SF6 */
   LORA_GET_REGISTER(RegDetectionThreshold);
 
-  vSyncWordInit(LORA_SYNC_WORD); /* Init Sync Word */
+  vSyncWordInit(LORA_SYNC_WORD); /* ANCHOR Init Sync Word */
   LORA_GET_REGISTER(RegSyncWord);
 
   vAgcReferenceLevelInit(AGC_REFERENCE); /* Sets the floor reference for all AGC thresholds */
@@ -1360,7 +1344,7 @@ void vLoraInit(void)
   // LORA_GET_REGISTER(RegTcxo);
   // printf("RegTcxo = 0x%XH\r\n", ucData);
 
-  vTcxoInputOnInit(TCXO_INPUT); /* Controls the crystal oscillator */
+  vTcxoInputOnInit(TCXO_INPUT); /* ANCHOR Controls the crystal oscillator */
   LORA_GET_REGISTER(RegTcxo);
 
   vPaDacInit(PA_DAC); /* Enables the +20dBm option on PA_BOOST pin */
@@ -1378,11 +1362,11 @@ void vLoraInit(void)
   * @param ucTxMode: Transmit Mode: Tx Single or Rx Coninuous
   * @retval None
   */
-void vLoraTransmit(uint8_t *pcTxBuffer, uint8_t ucTxMode)
+void vLoraTransmit(u8 *pcTxBuffer, u8 ucTxMode)
 {
-  uint8_t ucData = 0;
-  uint8_t i = 0;
-  uint8_t ucIrqStatus = 0;
+  u8 ucData = 0;
+  u8 i = 0;
+  u8 ucIrqStatus = 0;
 
   STM_LOGD("lora.c", "---------- Start Transmit ----------");
 
@@ -1397,7 +1381,7 @@ void vLoraTransmit(uint8_t *pcTxBuffer, uint8_t ucTxMode)
   {
     while (1)
     {
-      for (i = 0u; i < PAYLOAD_LENGHT; i++)
+      for (i = 0u; i < PAYLOAD_LENGTH; i++)
       {
         ucData = *(pcTxBuffer + i);
         vSpi1Write(RegFifo, *(pcTxBuffer + i));
@@ -1450,7 +1434,7 @@ void vLoraTransmit(uint8_t *pcTxBuffer, uint8_t ucTxMode)
   }
   else /* If Tx Single Mode */
   {
-    for (i = 0u; i < PAYLOAD_LENGHT; i++)
+    for (i = 0u; i < PAYLOAD_LENGTH; i++)
     {
       ucData = *(pcTxBuffer + i);
       vSpi1Write(RegFifo, *(pcTxBuffer + i));
@@ -1515,11 +1499,11 @@ void vLoraTransmit(uint8_t *pcTxBuffer, uint8_t ucTxMode)
   * @param ucRxMode: Receive Mode: Rx Single or Continuous
   * @retval None
   */
-void vLoraReceive(uint8_t *pcRxBuffer, uint8_t ucRxMode)
+void vLoraReceive(u8 *pcRxBuffer, u8 ucRxMode)
 {
-  uint8_t ucData = 0;
-  uint8_t i = 0;
-  uint8_t ucIrqStatus = 0;
+  u8 ucData = 0;
+  u8 i = 0;
+  u8 ucIrqStatus = 0;
   printf("****************** Start Receive ********************\r\n\r\n");
 
   /* Init Module Lora into Standby Mode */
@@ -1558,7 +1542,7 @@ void vLoraReceive(uint8_t *pcRxBuffer, uint8_t ucRxMode)
         ucData = ucSpi1Read(RegFifoRxCurrentAddr);
         vSpi1Write(RegFifoAddrPtr, ucData);
 
-        for (i = 0u; i < PAYLOAD_LENGHT; i++)
+        for (i = 0u; i < PAYLOAD_LENGTH; i++)
         {
           *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
           ucData = *(pcRxBuffer + i);
@@ -1630,7 +1614,7 @@ void vLoraReceive(uint8_t *pcRxBuffer, uint8_t ucRxMode)
         {
           ucData = ucSpi1Read(RegFifoRxCurrentAddr);
           vSpi1Write(RegFifoAddrPtr, ucData);
-          for (i = 0u; i < PAYLOAD_LENGHT; i++)
+          for (i = 0u; i < PAYLOAD_LENGTH; i++)
           {
             *(pcRxBuffer + i) = ucSpi1Read(RegFifo);
             ucData = *(pcRxBuffer + i);
@@ -1704,4 +1688,37 @@ void vLoraReceive(uint8_t *pcRxBuffer, uint8_t ucRxMode)
     }
   }
   printf("****************** Finish Receive ********************\r\n\r\n");
+}
+
+void vLoRaConfigure(u8 bandwidth, u8 sf, u8 cr)
+{
+  vBandWidthInit(bandwidth);
+  vSpreadingFactorInit(sf);
+  vCodingRateInit(cr);
+}
+
+u16 usLoRaGetPreamble(void)
+{
+  return ucSpi1Read(RegPreambleMsb) << 8 |
+         ucSpi1Read(RegPreambleLsb);
+}
+
+u8 usLoRaGetBandwidth(void)
+{
+  return (ucSpi1Read(RegModemConfig1) & BANDWIDTH_Msk) >> BANDWIDTH_MskPos;
+}
+
+u8 usLoRaGetCodingRate(void)
+{
+  return (ucSpi1Read(RegModemConfig1) & CODING_RATE_Msk) >> CODING_RATE_MskPos;
+}
+
+u8 usLoRaGetHeaderMode(void)
+{
+  return (ucSpi1Read(RegModemConfig1) & IMPLICIT_HEADER_MODE_ON_Msk) >> IMPLICIT_HEADER_MODE_ON_MskPos;
+}
+
+u8 usLoraGetSpreadingFactor(void)
+{
+  return (ucSpi1Read(RegModemConfig2) & SPREADING_FACTOR_Msk) >> SPREADING_FACTOR_MskPos;
 }

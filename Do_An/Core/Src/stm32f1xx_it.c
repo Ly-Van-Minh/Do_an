@@ -62,8 +62,8 @@ extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
+extern MainAppTypeDef mInfo;
 extern USART_CLI_HandleTypedef_t uartCliHandle;
-uint16_t lightSensorAdcValue = 0;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -251,8 +251,8 @@ __weak void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   if (hadc->Instance == hadc1.Instance)
   {
-    lightSensorAdcValue = HAL_ADC_GetValue(hadc);
-    STM_LOGI("ADC_READ", "lightSensor: %d", lightSensorAdcValue);
+    mInfo.adcLightSensor = HAL_ADC_GetValue(hadc);
+    STM_LOGI("ADC_READ", "lightSensor: %d", mInfo.adcLightSensor);
   }
 }
 
@@ -293,7 +293,7 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     static uint16_t millisSecond;
     static uint16_t blinkLedDelay;
-    
+
     if (++millisSecond == 70)
     {
       millisSecond = 0;
@@ -303,7 +303,7 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         runUserCmd(&uartCliHandle);
       }
     }
-    
+
     if (++blinkLedDelay == 500)
     {
       blinkLedDelay = 0;

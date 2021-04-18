@@ -34,10 +34,22 @@ extern "C"
   /* Private includes ----------------------------------------------------------*/
   /* USER CODE BEGIN Includes */
 #include "stm_log.h"
+#include "misc.h"
+#include "stdbool.h"
   /* USER CODE END Includes */
 
   /* Exported types ------------------------------------------------------------*/
   /* USER CODE BEGIN ET */
+
+  typedef uint32_t u32;
+  typedef uint16_t u16;
+  typedef uint8_t u8;
+
+  typedef struct MainAppType
+  {
+    u16 adcLightSensor;
+    bool isInit;
+  } MainAppTypeDef;
 
   /* USER CODE END ET */
 
@@ -72,15 +84,15 @@ extern "C"
 #define LED_OUTPUT_Pin GPIO_PIN_0
 #define LED_OUTPUT_GPIO_Port GPIOB
 
-/* USER CODE BEGIN Private defines */
+  /* USER CODE BEGIN Private defines */
 
-#define NODE1_ADDRESS               0x11u /* Address node 1 */
-#define NODE2_ADDRESS               0x22u /* Address node 2 */
-#define NODE3_ADDRESS               0x33u /* Address node 3 */
-#define GATEWAY_ADDRESS             0x44u /* Adress Gateway */
+#define NODE1_ADDRESS 0x11u   /* Address node 1 */
+#define NODE2_ADDRESS 0x22u   /* Address node 2 */
+#define NODE3_ADDRESS 0x33u   /* Address node 3 */
+#define GATEWAY_ADDRESS 0x44u /* Adress Gateway */
 
-#define RELAY_ON                    0xAAu
-#define RELAY_OFF                   0xBBu
+#define RELAY_ON 0xAAu
+#define RELAY_OFF 0xBBu
 
 #define WHICH_ERROR(err) (err == HAL_ERROR) ? "HAL_ERROR" : ((err == HAL_BUSY) ? "HAL_BUSY" : "HAL_TIMEOUT")
 #define TOGGLE_LED() HAL_GPIO_TogglePin(LED_OUTPUT_GPIO_Port, LED_OUTPUT_Pin)
@@ -93,7 +105,6 @@ extern "C"
       STM_LOGE("ERROR_CHECK_TAG", "[Error] %s", WHICH_ERROR(ret)); \
     }                                                              \
   } while (0)
-
 
   /* USER CODE END Private defines */
 

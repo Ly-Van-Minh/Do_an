@@ -5,85 +5,38 @@
  *      Author: Ly Van Minh
  */
 
-/*****************************************************************************/
+/* -------------------------------------------------------------------------- */
+/*                                   LORA.H                                   */
+/* -------------------------------------------------------------------------- */
 #ifndef __LORA_H
 #define __LORA_H
 
 #include <stdint.h>
 #include "stm32f1xx_hal.h"
+#include "misc.h"
 
 /* Define Long Range Mode*/
 #define LORA_MODE                   1u   /* LoRaTM Mode */
 // #define FSK_OOK_MODE                0u   /* FSK/OOK Mode */
 
-/* Define Node Address */
-
+#define DELAY_SPI                   3u
 #define SPI1_READ                   0x7Fu
 #define SPI1_WRITE                  0x80u
 
-#define LORA_GET_REGISTER(req)                                                                                   \
-    do                                                                                                           \
-    {                                                                                                            \
-        uint8_t ret = ucSpi1Read(req);                                                                           \
-        STM_LOGV("", "%s: 0x%.2x - " BYTE_TO_BINARY_PATTERN, #req, ucSpi1Read(ret), BYTE_TO_BINARY(ret)); \
+#define LORA_GET_REGISTER(req)                                                                \
+    do                                                                                        \
+    {                                                                                         \
+        u8 ret = ucSpi1Read(req);                                                        \
+        STM_LOGV("", "%s: 0x%.2x - " BYTE_TO_BINARY_PATTERN, #req, ret, BYTE_TO_BINARY(ret)); \
     } while (0)
 
-enum LORASX127x_RX_MODE
-{
-    RX_SINGLE = 0u,
-    RX_CONTINUOUS = 1u,
-};
-
-enum LORASX127x_TX_MODE
-{
-    TX_SINGLE = 0u,
-    TX_CONTINOUS = 1u,
-};
 #define LORA_SYNC_WORD              0x12u
-
-enum LORASX127x_BANDWIDTH
-{
-    BANDWIDTH_7K8 = 0u,
-    BANDWIDTH_10K4 = 1u,
-    BANDWIDTH_15K6 = 2u,
-    BANDWIDTH_20K8 = 3u,
-    BANDWIDTH_31K25 = 4u,
-    BANDWIDTH_41K7 = 5u,
-    BANDWIDTH_62K5 = 6u,
-    BANDWIDTH_125K = 7u,
-    BANDWIDTH_250K = 8u,
-    BANDWIDTH_500K = 9u,
-};
-
-enum LORASX127x_CODING_RATE
-{
-    CODING_RATE_4_5 = 1u,
-    CODING_RATE_4_6 = 2u,
-    CODING_RATE_4_7 = 3u,
-    CODING_RATE_4_8 = 4u,
-};
-
-enum LORASX127x_HEADER_TYPE
-{
-    EXPLICIT_HEADER = 0u,
-    IMPLICIT_HEADER = 1u,
-};
-
-enum LORASX127x_SPREADING_FACTOR
-{
-    SPREADING_FACTOR_5 = 5u,
-    SPREADING_FACTOR_6 = 6u,
-    SPREADING_FACTOR_7 = 7u,
-    SPREADING_FACTOR_8 = 8u,
-    SPREADING_FACTOR_9 = 9u,
-    SPREADING_FACTOR_10 = 10u,
-};
+#define PREAMBLE_LENGTH             0x0008u
 
 #define TX_NORMAL_MODE              0u
 #define CRC_ENABLE                  1u
 #define RX_TIMEOUT                  0x0064u
-#define PREAMBLE_LENGTH             0x0008u
-#define PAYLOAD_LENGHT              3u   /* Payload Lenght */
+#define PAYLOAD_LENGTH              3u   /* Payload Lenght */
 #define PAYLOAD_MAX_LENGTH          0xFFu
 #define FREQ_HOPPING_PERIOD         0u
 #define AGC_AUTO                    0u
@@ -129,18 +82,166 @@ enum LORASX127x_SPREADING_FACTOR
 #define FHSS_CHANGE_CHANNEL_FLAG    0x02u
 #define CAD_DETECTED_FLAG           0x01u
 
-/* Define Device Mode */
-#define SLEEP_MODE          0u   /* Sleep */
-#define STDBY_MODE          1u   /* Standby */
-#define FSTX_MODE           2u   /* Frequency synthesis TX */
-#define TX_MODE             3u   /* Transmit */
-#define FSRX_MODE           4u   /* Frequency synthesis RX */
-#define RXCONTINUOUS_MODE   5u   /* Receive continuous */
-#define RXSINGLE_MODE       6u   /* Receive single */
-#define CAD_MODE            7u   /* Channel activity detection */
-/****************** Begin define registers of module Lora ********************/
+#define BIT_VALUE_1   (0b1)
+#define BIT_VALUE_2   (0b11)
+#define BIT_VALUE_3   (0b111)
+#define BIT_VALUE_4   (0b1111)
+#define BIT_VALUE_5   (0b11111)
+#define BIT_VALUE_6   (0b111111)
+#define BIT_VALUE_7   (0b1111111)
+#define BIT_VALUE_8   (0b11111111)
 
-/* Registers use general for LORA and FSK/OOK Mode ------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                             Bit Mask Definition                            */
+/* -------------------------------------------------------------------------- */
+/* -------------------------------- RegOpMode ------------------------------- */
+#define LONG_RANGE_MODE_MskPos         (7u)
+#define LONG_RANGE_MODE_Msk            (BIT_VALUE_1 << LONG_RANGE_MODE_MskPos)
+#define ACCESS_SHARED_REG_MskPos       (6u)
+#define ACCESS_SHARED_REG_Msk          (BIT_VALUE_1 << ACCESS_SHARED_REG_MskPos)
+#define LOW_FREQUENCY_MODE_ON_MskPos   (3u)
+#define LOW_FREQUENCY_MODE_ON_Msk      (BIT_VALUE_1 << LOW_FREQUENCY_MODE_ON_MskPos)
+#define MODE_MskPos                    (0u)
+#define MODE_Msk                       (BIT_VALUE_3 << MODE_MskPos)
+/* -------------------------------- RegFrMsb -------------------------------- */
+#define FREQUENCY_MSB_MskPos           (0u)
+#define FREQUENCY_MSB_Msk              (BIT_VALUE_8 << FREQUENCY_MSB_MskPos))
+/* -------------------------------- RegFrMid -------------------------------- */
+#define FREQUENCY_MID_MskPos           (0u)
+#define FREQUENCY_MID_Msk              (BIT_VALUE_8 << FREQUENCY_MID_MskPos))
+/* -------------------------------- RegFrLsb -------------------------------- */
+#define FREQUENCY_LSB_MskPos           (0u)
+#define FREQUENCY_LSB_Msk              (BIT_VALUE_8 << FREQUENCY_LSB_MskPos))
+/* ------------------------------- RegIrqFlags ------------------------------ */
+#define RX_TIMEOUT_MskPos              (7u)
+#define RX_TIMEOUT_Msk                 (BIT_VALUE_1 << RX_TIMEOUT_MskPos)
+#define RX_DONE_MskPos                 (7u)
+#define RX_DONE_Msk                    (BIT_VALUE_1 << RX_DONE_MskPos)
+#define PAYLOAD_CRC_ERROR_MskPos       (7u)
+#define PAYLOAD_CRC_ERROR_Msk          (BIT_VALUE_1 << PAYLOAD_CRC_ERROR_MskPos)
+#define VALID_HEADER_MskPos            (7u)
+#define VALID_HEADER_Msk               (BIT_VALUE_1 << VALID_HEADER_MskPos)
+#define TX_DONE_MskPos                 (7u)
+#define TX_DONE_Msk                    (BIT_VALUE_1 << TX_DONE_MskPos)
+#define CAD_DONE_MskPos                (7u)
+#define CAD_DONE_Msk                   (BIT_VALUE_1 << CAD_DONE_MskPos)
+#define FHSS_CHANGE_CHANNEL_MskPos     (7u)
+#define FHSS_CHANGE_CHANNEL_Msk        (BIT_VALUE_1 << FHSS_CHANGE_CHANNEL_MskPos)
+#define CAD_DETECTED_MskPos            (7u)
+#define CAD_DETECTED_Msk               (BIT_VALUE_1 << CAD_DETECTED_MskPos)
+/* ----------------------------- RegPktRssiValue ---------------------------- */
+#define PACKKET_RSSI_MskPos            (0u)
+#define PACKKET_RSSI_Msk               (BIT_VALUE_8 << PACKKET_RSSI_MskPos)
+/* ------------------------------ RegRssiValue ------------------------------ */
+#define RSSI_MskPos                    (0u)
+#define RSSI_Msk                       (BIT_VALUE_8 << RSSI_MskPos)
+/* ----------------------------- RegModemConfig1 ---------------------------- */
+#define BANDWIDTH_MskPos               (4u)
+#define BANDWIDTH_Msk                  (BIT_VALUE_4 << BANDWIDTH_MskPos)
+#define CODING_RATE_MskPos             (1u)
+#define CODING_RATE_Msk                (BIT_VALUE_3 << CODING_RATE_MskPos)
+#define IMPLICIT_HEADER_MODE_ON_MskPos (0u)
+#define IMPLICIT_HEADER_MODE_ON_Msk    (BIT_VALUE_1 << IMPLICIT_HEADER_MODE_ON_MskPos)
+/* ----------------------------- RegModemConfig2 ---------------------------- */
+#define SPREADING_FACTOR_MskPos        (4u)
+#define SPREADING_FACTOR_Msk           (BIT_VALUE_4 << SPREADING_FACTOR_MskPos)
+#define TX_CONTINUOUS_MODE_MskPos      (3u)
+#define TX_CONTINUOUS_MODE_Msk         (BIT_VALUE_1 << TX_CONTINUOUS_MODE_MskPos)
+#define RX_PAYLOAD_CRC_ON_MskPos       (2u)
+#define RX_PAYLOAD_CRC_ON_Msk          (BIT_VALUE_1 << RX_PAYLOAD_CRC_ON_MskPos)
+#define SYMB_TIMEOUT_9_8_MskPos        (0)
+#define SYMB_TIMEOUT_9_8_Msk           (BIT_VALUE_2 << SYMB_TIMEOUT_9_8_MskPos)
+/* ---------------------------- RegSymbTimeoutLsb --------------------------- */
+#define SYMB_TIMEOUT_7_0_MskPos        (0u)
+#define SYMB_TIMEOUT_7_0_Msk           (BIT_VALUE_8 << SYMB_TIMEOUT_7_0_MskPos)
+/* ----------------------------- RegPreambleMsb ----------------------------- */
+#define PREAMBLE_LENGTH_MSB_MskPos     (0u)
+#define PREAMBLE_LENGTH_MSB_Msk        (BIT_VALUE_8<< PREAMBLE_LENGTH_MSB_MskPos)
+/* ----------------------------- RegPreambleLsb ----------------------------- */
+#define PREAMBLE_LENGTH_LSB_MskPos     (0u)
+#define PREAMBLE_LENGTH_LSB_Msk        (BIT_VALUE_8 << PREAMBLE_LENGTH_LSB_MskPos)
+/* ---------------------------- RegPayloadLength ---------------------------- */
+#define PAYLOAD_LENGTH_MskPos          (0u)
+#define PAYLOAD_LENGTH_Msk             (BIT_VALUE_8 << PAYLOAD_LENGTH_MskPos)
+/* --------------------------- RegMaxPayloadLength -------------------------- */
+#define PAYLOAD_MAX_LENGTH_MksPos      (0u)
+#define PAYLOAD_MAX_LENGTH_Mks         (BIT_VALUE_8 << PAYLOAD_MAX_LENGTH_MksPos)
+
+/* Define Device Bandwidth */
+enum eBANDWIDTH
+{
+    BANDWIDTH_7K8   = 0u,
+    BANDWIDTH_10K4  = 1u,
+    BANDWIDTH_15K6  = 2u,
+    BANDWIDTH_20K8  = 3u,
+    BANDWIDTH_31K25 = 4u,
+    BANDWIDTH_41K7  = 5u,
+    BANDWIDTH_62K5  = 6u,
+    BANDWIDTH_125K  = 7u, /* DEFAULT */
+    BANDWIDTH_250K  = 8u,
+    BANDWIDTH_500K  = 9u,
+};
+
+/* Define Device Coding rate */
+enum eCODING_RATE
+{
+    CODING_RATE_4_5 = 1u, /* DEFAULT */
+    CODING_RATE_4_6 = 2u,
+    CODING_RATE_4_7 = 3u,
+    CODING_RATE_4_8 = 4u,
+};
+
+/* Define Device Header type */
+enum eHEADER_TYPE
+{
+    EXPLICIT_HEADER = 0u, /* DEFAULT */
+    IMPLICIT_HEADER = 1u,
+};
+
+/* Define Device Spreding Factor */
+enum eSPREADING_FACTOR
+{
+    SPREADING_FACTOR_6_64    = 6u,
+    SPREADING_FACTOR_7_128   = 7u, /* DEFAULT */
+    SPREADING_FACTOR_8_256   = 8u,
+    SPREADING_FACTOR_9_512   = 9u,
+    SPREADING_FACTOR_10_1024 = 10u,
+    SPREADING_FACTOR_11_2048 = 11u,
+    SPREADING_FACTOR_12_4096 = 12u,
+};
+
+/* Define Device Mode */
+enum eWORKING_MODE
+{
+    SLEEP_MODE        = 0u,           /* Sleep */
+    STDBY_MODE        = 1u,           /* Standby */
+    FSTX_MODE         = 2u,           /* Frequency synthesis TX */
+    TX_MODE           = 3u,           /* Transmit */
+    FSRX_MODE         = 4u,           /* Frequency synthesis RX */
+    RXCONTINUOUS_MODE = 5u,           /* Receive continuous */
+    RXSINGLE_MODE     = 6u,           /* Receive single */
+    CAD_MODE          = 7u,           /* Channel activity detection */
+};
+
+/* Define Device Receive Mode */
+enum eRX_MODE
+{
+    RX_SINGLE = 0u,
+    RX_CONTINUOUS = 1u,
+};
+
+/* Define Device Transmit Mode */
+enum eTX_MODE
+{
+    TX_SINGLE = 0u,
+    TX_CONTINOUS = 1u,
+};
+
+/* -------------------------------------------------------------------------- */
+/*                    Begin define registers of module Lora                   */
+/* -------------------------------------------------------------------------- */
+
+/* ------------- Registers use general for LORA and FSK/OOK Mode ------------ */
 #define RegFifo         0x00u   /* FIFO read/write access */
 #define RegOpMode       0x01u   /* Operating mode & LoRaTM / FSK selection */
 #define RegFrfMsb       0x06u   /* RF Carrier Frequency, Most Significant Bits */
@@ -162,7 +263,8 @@ enum LORASX127x_SPREADING_FACTOR
 #define RegAgcThresh3   0x64u   /* Adjustment of the AGC thresholds 3 */
 #define RegPll          0x70u   /* Control of the PLL bandwidth */
 
-#if LORA_MODE   /* Registers for LORA Mode */
+/* ------------------------- Registers for LORA Mode ------------------------ */
+#if LORA_MODE   
     #define RegFifoAddrPtr          0x0Du   /* FIFO SPI pointer */
     #define RegFifoTxBaseAddr       0x0Eu   /* Start Tx data */
     #define RegFifoRxBaseAddr       0x0Fu   /* Start Rx data */
@@ -197,7 +299,8 @@ enum LORASX127x_SPREADING_FACTOR
     #define RegInvertIQ             0x33u   /* Invert LoRa I and Q signals */
     #define RegDetectionThreshold   0x37u   /* LoRa detection threshold for SF6 */
     #define RegSyncWord             0x39u   /* LoRa Sync Word */
-#else   /* Registers for FSK/OOK Mode */
+/* ----------------------- /Registers for FSK/OOK Mode ---------------------- */
+#else   
     #define RegBitrateMsb       0x02u
     #define RegBitrateLsb       0x03u
     #define RegFdevMsb          0x04u
@@ -256,98 +359,106 @@ enum LORASX127x_SPREADING_FACTOR
     #define RegPllHop           0x44u   /* Control the fast frequency hopping mode */
     #define RegBitRateFrac      0x5Du   /* Fractional part in the Bit Rate division ratio */
 #endif
-/********************* End define registers of modele Lora *******************/
+/* ------------------- End define registers of modele Lora ------------------ */
 
-/**************************** Private functions ******************************/
-
-/* Init Lora functions */
-
-void vSpi1Write(uint8_t ucAddress, uint8_t ucData);
-uint8_t ucSpi1Read(uint8_t ucAddress);
-// uint8_t ucReadFifo(void);
-// void vWriteFifo(uint8_t ucData);
-void vLongRangeModeInit(uint8_t ucLongRangeMode);
-void vAccessSharedRegInit(uint8_t ucAccessSharedReg);
-void vLowFrequencyModeOnInit(uint8_t ucLowFrequencyModeOn);
-void vModeInit(uint8_t ucMode);
+/* -------------------------------------------------------------------------- */
+/*                             Function Prototype                             */
+/* -------------------------------------------------------------------------- */
+void vSpi1Write(u8 ucAddress, u8 ucData);
+u8 ucSpi1Read(u8 ucAddress);
+// u8 ucReadFifo(void);
+// void vWriteFifo(u8 ucData);
+void vLongRangeModeInit(u8 ucLongRangeMode);
+void vAccessSharedRegInit(u8 ucAccessSharedReg);
+void vLowFrequencyModeOnInit(u8 ucLowFrequencyModeOn);
+void vModeInit(u8 ucMode);
 void vFrfInit(unsigned int uiFrf);
-void vPaSelectInit(uint8_t ucPaSelect);
-void vMaxPowerInit(uint8_t ucMaxPower);
-void vOutputPowerInit(uint8_t ucOutputPower);
-void vPaRampInit(uint8_t ucRegPaRamp);
-void vOcpOnInit(uint8_t ucOcpOn);
-void vOcpTrimInit(uint8_t ucOcpTrim);
-void vLnaGainInit(uint8_t ucLnaGain);
-void vLnaBoostLfInit(uint8_t ucLnaBoostLf);
-void vLnaBoostHfInit(uint8_t ucLnaBoostHf);
-// uint8_t ucFifoAddrPtrRead(void);
-// void vFifoAddrPtrWrite(uint8_t ucFifoAddrPtr);
-void vFifoTxBaseAddrInit(uint8_t ucFifoTxBaseAddr);
-void vFifoRxBaseAddrInit(uint8_t ucFifoRxBaseAddr);
-uint8_t ucFifoRxCurrentAddrRead(void);
-// void vRxTimeoutMaskInit(uint8_t ucRxTimeoutMask);
-// void vRxDoneMaskInit(uint8_t ucRxDoneMask);
-// void vPayloadCrcErrorMaskInit(uint8_t ucPayloadCrcErrorMask);
-// void vValidHeaderMaskInit(uint8_t ucValidHeaderMask);
-// void vTxDoneMaskInit(uint8_t ucTxDoneMask);
-// void vCadDoneMaskInit(uint8_t ucCadDoneMask);
-// void vFhssChangeChannelMaskInit(uint8_t ucFhssChangeChannelMask);
-// void vCadDetectedMaskInit(uint8_t ucCadDetectedMask);
-void vIrqFlagsMaskInit(uint8_t ucIrqFlagsMask);
-uint8_t ucIrqFlagsRead(void);
-void vIrqFlagsClear(uint8_t ucIrqFlags);
-uint8_t ucFifoRxBytesNbRead(void);
+void vPaSelectInit(u8 ucPaSelect);
+void vMaxPowerInit(u8 ucMaxPower);
+void vOutputPowerInit(u8 ucOutputPower);
+void vPaRampInit(u8 ucRegPaRamp);
+void vOcpOnInit(u8 ucOcpOn);
+void vOcpTrimInit(u8 ucOcpTrim);
+void vLnaGainInit(u8 ucLnaGain);
+void vLnaBoostLfInit(u8 ucLnaBoostLf);
+void vLnaBoostHfInit(u8 ucLnaBoostHf);
+// u8 ucFifoAddrPtrRead(void);
+// void vFifoAddrPtrWrite(u8 ucFifoAddrPtr);
+void vFifoTxBaseAddrInit(u8 ucFifoTxBaseAddr);
+void vFifoRxBaseAddrInit(u8 ucFifoRxBaseAddr);
+u8 ucFifoRxCurrentAddrRead(void);
+// void vRxTimeoutMaskInit(u8 ucRxTimeoutMask);
+// void vRxDoneMaskInit(u8 ucRxDoneMask);
+// void vPayloadCrcErrorMaskInit(u8 ucPayloadCrcErrorMask);
+// void vValidHeaderMaskInit(u8 ucValidHeaderMask);
+// void vTxDoneMaskInit(u8 ucTxDoneMask);
+// void vCadDoneMaskInit(u8 ucCadDoneMask);
+// void vFhssChangeChannelMaskInit(u8 ucFhssChangeChannelMask);
+// void vCadDetectedMaskInit(u8 ucCadDetectedMask);
+void vIrqFlagsMaskInit(u8 ucIrqFlagsMask);
+u8 ucIrqFlagsRead(void);
+void vIrqFlagsClear(u8 ucIrqFlags);
+u8 ucFifoRxBytesNbRead(void);
 uint16_t usValidHeaderCntRead(void);
 uint16_t usValidPacketCntRead(void);
-uint8_t ucRxCodingRateRead(void);
-uint8_t ucModemStatusRead(void);
-uint8_t ucPacketRssiRead(void);
-uint8_t ucRssiRead(void);
-uint8_t ucPllTimeoutRead(void);
-uint8_t ucCrcOnPayloadread(void);
-uint8_t ucFhssPresentChannelRead(void);
-void vBandWidthInit(uint8_t ucBandWidth);
-void vCodingRateInit(uint8_t ucCodingRate);
-void vImplicitHeaderModeOnInit(uint8_t ucHeaderMode);
-void vSpreadingFactorInit(uint8_t ucSpreadingFactor);
-void vTxContinuousModeInit(uint8_t ucTxContinuousMode);
-void vRxPayloadCrcOnInit(uint8_t ucRxPayloadCrcOn);
+u8 ucRxCodingRateRead(void);
+u8 ucModemStatusRead(void);
+u8 ucPacketRssiRead(void);
+u8 ucRssiRead(void);
+u8 ucPllTimeoutRead(void);
+u8 ucCrcOnPayloadread(void);
+u8 ucFhssPresentChannelRead(void);
+void vBandWidthInit(u8 ucBandWidth);
+void vCodingRateInit(u8 ucCodingRate);
+void vImplicitHeaderModeOnInit(u8 ucHeaderMode);
+void vSpreadingFactorInit(u8 ucSpreadingFactor);
+void vTxContinuousModeInit(u8 ucTxContinuousMode);
+void vRxPayloadCrcOnInit(u8 ucRxPayloadCrcOn);
 void vSymbTimeoutInit(uint16_t ucSymbTimeout);
 void vPreambleLengthInit(uint16_t ucPreambleLength);
-void vPayloadLengthInit(uint8_t ucPayloadLength);
-void vPayloadMaxLengthInit(uint8_t ucPayloadMaxLength);
-void vFreqHoppingPeriodInit(uint8_t ucFreqHoppingPeriod);
-uint8_t ucFifoRxByteAddrPtr(void);
-void vLowDataRateOptimizeInit(uint8_t ucLowDataRateOptimize);
-void vAgcAutoOnInit(uint8_t ucAgcAutoOn);
+void vPayloadLengthInit(u8 ucPayloadLength);
+void vPayloadMaxLengthInit(u8 ucPayloadMaxLength);
+void vFreqHoppingPeriodInit(u8 ucFreqHoppingPeriod);
+u8 ucFifoRxByteAddrPtr(void);
+void vLowDataRateOptimizeInit(u8 ucLowDataRateOptimize);
+void vAgcAutoOnInit(u8 ucAgcAutoOn);
 unsigned int uiFreqError(void);
-uint8_t ucRssiWidebandInit(void);
-void vDetectionOptimizeInit(uint8_t ucDetectionOptimize);
-void vInvertIQInit(uint8_t ucInvertIQ);
-void vDetectionThresholdInit(uint8_t ucDetectionThreshold);
-void vSyncWordInit(uint8_t ucSyncWord);
-void vDio0MappingInit(uint8_t ucDio0Mapping);
-void vDio1MappingInit(uint8_t ucDio1Mapping);
-void vDio2MappingInit(uint8_t ucDio2Mapping);
-void vDio3MappingInit(uint8_t ucDio3Mapping);
-void vDio4MappingInit(uint8_t ucDio4Mapping);
-void vDio5MappingInit(uint8_t ucDio5Mapping);
-void vMapPreambleDetectInit(uint8_t ucMapPreambleDetect);
-uint8_t ucVersionRead(void);
-void vTcxoInputOnInit(uint8_t ucTcxoInputOn);
-void vPaDacInit(uint8_t ucPaDac);
-void vFormerTempInit(uint8_t ucFormerTemp);
-void vAgcReferenceLevelInit(uint8_t ucAgcReferenceLevel);
-void vAgcStep1Init(uint8_t ucAgcStep1);
-void vAgcStep2Init(uint8_t ucAgcStep2);
-void vAgcStep3Init(uint8_t ucAgcStep3);
-void vAgcStep4Init(uint8_t ucAgcStep4);
-void vAgcStep5Init(uint8_t ucAgcStep5);
-void vPllBandwidth(uint8_t ucPllBandwidth);
+u8 ucRssiWidebandInit(void);
+void vDetectionOptimizeInit(u8 ucDetectionOptimize);
+void vInvertIQInit(u8 ucInvertIQ);
+void vDetectionThresholdInit(u8 ucDetectionThreshold);
+void vSyncWordInit(u8 ucSyncWord);
+void vDio0MappingInit(u8 ucDio0Mapping);
+void vDio1MappingInit(u8 ucDio1Mapping);
+void vDio2MappingInit(u8 ucDio2Mapping);
+void vDio3MappingInit(u8 ucDio3Mapping);
+void vDio4MappingInit(u8 ucDio4Mapping);
+void vDio5MappingInit(u8 ucDio5Mapping);
+void vMapPreambleDetectInit(u8 ucMapPreambleDetect);
+u8 ucVersionRead(void);
+void vTcxoInputOnInit(u8 ucTcxoInputOn);
+void vPaDacInit(u8 ucPaDac);
+void vFormerTempInit(u8 ucFormerTemp);
+void vAgcReferenceLevelInit(u8 ucAgcReferenceLevel);
+void vAgcStep1Init(u8 ucAgcStep1);
+void vAgcStep2Init(u8 ucAgcStep2);
+void vAgcStep3Init(u8 ucAgcStep3);
+void vAgcStep4Init(u8 ucAgcStep4);
+void vAgcStep5Init(u8 ucAgcStep5);
+void vPllBandwidth(u8 ucPllBandwidth);
 void vLoraInit(void);
-void vLoraTransmit(uint8_t* pcTxBuffer, uint8_t ucTxMode);
-void vLoraReceive(uint8_t* pcRxBuffer, uint8_t ucRxMode);
+void vLoraTransmit(u8* pcTxBuffer, u8 ucTxMode);
+void vLoraReceive(u8* pcRxBuffer, u8 ucRxMode);
+void vLoRaConfigure(u8 bandwidth, u8 sf, u8 cr);
+u16 usLoRaGetPreamble(void);
+u8 usLoRaGetBandwidth(void);
+u8 usLoRaGetCodingRate(void);
+u8 usLoRaGetHeaderMode(void);
+u8 usLoraGetSpreadingFactor(void);
+/* -------------------------- End private functions ------------------------- */
 
-/************************** End private functions ****************************/
 #endif /* !_LORA_H_ */
-/****************************** END OF FILE **********************************/
+
+/* -------------------------------------------------------------------------- */
+/*                                 END OF FILE                                */
+/* -------------------------------------------------------------------------- */
