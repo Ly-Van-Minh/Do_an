@@ -31,6 +31,7 @@
 #include "misc.h"
 #include "lora.h"
 #include "light-sensor.h"
+#include "data-format.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SENDER
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,26 +54,17 @@
 /* USER CODE BEGIN PV */
 USART_CLI_HandleTypedef_t uartCliHandle;
 IWDG_HandleTypeDef hiwdg;
-const char *MAIN_TAG = "MAIN_TAG";
-
-MainAppTypeDef mInfo = {
+extern u8 ucSendData[PAYLOAD_LENGTH];
+extern u8 ucReceivedData[PAYLOAD_LENGTH];
+MainAppTypeDef_t mInfo = {
     .adcLightSensor = 0,
-    .isLoRaReceived = false,
+    .isRxDone = false,
     .isInit = false,
+    .pTxData = ucSendData,
+    .pRxData = ucReceivedData,
+    .loraCurMode = UNKNOWN,
 };
 
-uint8_t ucMatrix[PAYLOAD_LENGTH] =
-    {NODE1_ADDRESS,
-     GATEWAY_ADDRESS,
-     RELAY_ON,
-     0x01,
-     0x02,
-     0x03,
-     0x04,
-     0x05,
-     0x06,
-     0x07};
-uint8_t ucMatrixReceive[PAYLOAD_LENGTH];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,33 +111,33 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
-  STM_LOGD("IWDG", "SET WATCHDOG: {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
-  STM_LOGD(MAIN_TAG, "MCU RESET CAUSE: {%s}", resetCauseGetName(resetCauseGet()));
-  STM_LOGD(MAIN_TAG, "------START APPLICATION------");
+  STM_LOGD("MainInit", "Reset cause: {%s}", resetCauseGetName(resetCauseGet()));
+  STM_LOGD("MainInit", "Watchdog Init {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
   vLoraInit();
+  STM_LOGD("MainInit", "------START APPLICATION------");
   LORA_GET_REGISTER(RegSyncWord);
   LORA_GET_REGISTER(RegPayloadLength);
 
+#ifndef SENDER
   /* Receiver */
   vModeInit(STDBY_MODE);
   vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
   vModeInit(RXCONTINUOUS_MODE);
+#endif /* !SENSOR */
   /* USER CODE END 2 */
 
-  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* reset IWDG */
-    // ADC_READ_LIGHTSENSOR();
-    // printf("\r\n");
-    // ucMatrix[0]++;
-    // LoRaTransmit(ucMatrix, PAYLOAD_LENGTH, 5000);
-    // HAL_Delay(1000);
-
-    if (mInfo.isLoRaReceived)
+// ADC_READ_LIGHTSENSOR();
+#ifdef SENDER
+    printf("\r\n");
+    LoRaTransmit(mInfo.pTxData , PAYLOAD_LENGTH, 5000);
+    HAL_Delay(1000);
+#else  /* !SENDER */
+    if (mInfo.isRxDone)
     {
-      mInfo.isLoRaReceived = false;
+      mInfo.isRxDone = false;
       if ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos)
       {
         /* PAYLOAD_CRC CHECK */
@@ -160,16 +152,15 @@ int main(void)
           for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
           {
             LORA_GET_REGISTER(RegFifoAddrPtr);
-            // *(outData + i) = ucSpi1Read(RegFifo);
-            STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, ucSpi1Read(RegFifo));
-            // LORA_GET_REGISTER(RegFifoAddrPtr);
+            *(mInfo.pRxData + i) = ucSpi1Read(RegFifo);
+            STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, *(mInfo.pRxData + i));
           }
         }
       }
-
       /* CLEAR RX_DONE FLAG */
       vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
     }
+#endif /* !SENDER */
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
@@ -230,7 +221,7 @@ void _Error_Handler(char *file, int line)
 
   while (1)
   {
-    STM_LOGE(MAIN_TAG, "Error file %s line %d", file, line);
+    STM_LOGE("ERROR", "Error file %s line %d", file, line);
   }
 }
 /* USER CODE END 4 */
@@ -246,7 +237,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-    STM_LOGE(MAIN_TAG, "");
+    STM_LOGE("ERROR", "");
   }
   /* USER CODE END Error_Handler_Debug */
 }

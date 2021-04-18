@@ -1,3 +1,13 @@
 # Editor files
 *.vscode
 *.vscode/*
+*.settings
+
+Debug/*.bin
+Debug/*.elf
+Debug/*.list
+Debug/*.map
+Debug/makefile
+Debug/*.mk
+Drivers
+Release

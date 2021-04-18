@@ -63,7 +63,7 @@ extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
-extern MainAppTypeDef mInfo;
+extern MainAppTypeDef_t mInfo;
 extern USART_CLI_HandleTypedef_t uartCliHandle;
 /* USER CODE END EV */
 
@@ -335,7 +335,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   if (GPIO_Pin == INTERRUPT_LORA_Pin)
   {
     STM_LOGD("ISR", "INTERRUPT_LORA_Pin");
-    mInfo.isLoRaReceived = true;
+    mInfo.isRxDone = true;
   }
 }
 

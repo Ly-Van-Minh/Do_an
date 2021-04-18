@@ -14,10 +14,12 @@
 #include <stdint.h>
 #include "stm32f1xx_hal.h"
 #include "misc.h"
+#include "main.h"
 
 /* Define Long Range Mode*/
-#define LORA_MODE                   1u   /* LoRaTM Mode */
-// #define FSK_OOK_MODE                0u   /* FSK/OOK Mode */
+#define USE_LORA_MODE               (1u)
+
+#define LORA_MAX_DELAY              (0xFFFF)
 
 #define DELAY_SPI                   3u
 #define SPI1_READ                   0x7Fu
@@ -27,7 +29,7 @@
     do                                                                                        \
     {                                                                                         \
         u8 ret = ucSpi1Read(req);                                                        \
-        STM_LOGV("", "%s: 0x%.2x - " BYTE_TO_BINARY_PATTERN, #req, ret, BYTE_TO_BINARY(ret)); \
+        STM_LOGV("LORA", "%s: 0x%.2x - " BYTE_TO_BINARY_PATTERN, #req, ret, BYTE_TO_BINARY(ret)); \
     } while (0)
 
 #define LORA_SYNC_WORD              0x12u
@@ -35,7 +37,7 @@
 
 #define TX_NORMAL_MODE              0u
 #define RX_TIMEOUT                  0x0064u
-#define PAYLOAD_LENGTH              3u   /* Payload Lenght */
+#define PAYLOAD_LENGTH              10u   /* Payload Lenght */
 #define PAYLOAD_MAX_LENGTH          0xFFu
 #define FREQ_HOPPING_PERIOD         0u
 #define AGC_AUTO                    0u
@@ -89,6 +91,21 @@
 #define BIT_VALUE_7   (0b1111111)
 #define BIT_VALUE_8   (0b11111111)
 
+
+/* -------------------------------------------------------------------------- */
+/*                               LoRa Structure                               */
+/* -------------------------------------------------------------------------- */
+//typedef struct{
+//    LoRaModulationModeTypeDef_t mode;
+//    u32 frequency;
+//    u16 preamble;
+//    LoRaCodingRateTypeDef_t codingRate;
+//    LoRaHeaderTypeDef_t headerType;
+//    LoRaSpredingFactorTypeDef_t spreadingFactor;
+//    LoRaCrcModeTypeDef_t crcMode;
+//    LoRaOsscSourceTypeDef_t osscSource;
+//} LoRaInitTypeDef_t;
+
 /* -------------------------------------------------------------------------- */
 /*                             Bit Mask Definition                            */
 /* -------------------------------------------------------------------------- */
@@ -113,19 +130,19 @@
 /* ------------------------------- RegIrqFlags ------------------------------ */
 #define RX_TIMEOUT_MskPos              (7u)
 #define RX_TIMEOUT_Msk                 (BIT_VALUE_1 << RX_TIMEOUT_MskPos)
-#define RX_DONE_MskPos                 (7u)
+#define RX_DONE_MskPos                 (6u)
 #define RX_DONE_Msk                    (BIT_VALUE_1 << RX_DONE_MskPos)
-#define PAYLOAD_CRC_ERROR_MskPos       (7u)
+#define PAYLOAD_CRC_ERROR_MskPos       (5u)
 #define PAYLOAD_CRC_ERROR_Msk          (BIT_VALUE_1 << PAYLOAD_CRC_ERROR_MskPos)
-#define VALID_HEADER_MskPos            (7u)
+#define VALID_HEADER_MskPos            (4u)
 #define VALID_HEADER_Msk               (BIT_VALUE_1 << VALID_HEADER_MskPos)
-#define TX_DONE_MskPos                 (7u)
+#define TX_DONE_MskPos                 (3u)
 #define TX_DONE_Msk                    (BIT_VALUE_1 << TX_DONE_MskPos)
-#define CAD_DONE_MskPos                (7u)
+#define CAD_DONE_MskPos                (2u)
 #define CAD_DONE_Msk                   (BIT_VALUE_1 << CAD_DONE_MskPos)
-#define FHSS_CHANGE_CHANNEL_MskPos     (7u)
+#define FHSS_CHANGE_CHANNEL_MskPos     (1u)
 #define FHSS_CHANGE_CHANNEL_Msk        (BIT_VALUE_1 << FHSS_CHANGE_CHANNEL_MskPos)
-#define CAD_DETECTED_MskPos            (7u)
+#define CAD_DETECTED_MskPos            (0u)
 #define CAD_DETECTED_Msk               (BIT_VALUE_1 << CAD_DETECTED_MskPos)
 /* ----------------------------- RegPktRssiValue ---------------------------- */
 #define PACKKET_RSSI_MskPos            (0u)
@@ -166,7 +183,13 @@
 #define PAYLOAD_MAX_LENGTH_Mks         (BIT_VALUE_8 << PAYLOAD_MAX_LENGTH_MksPos)
 
 /* Define Device Bandwidth */
-enum eBANDWIDTH
+typedef enum MODE
+{
+    FSK_OOK_MODE = 0u,
+    LORA_MODE = 1u,
+} LoRaModulationModeTypeDef_t;
+
+enum BANDWIDTH
 {
     BANDWIDTH_7K8   = 0u,
     BANDWIDTH_10K4  = 1u,
@@ -181,23 +204,23 @@ enum eBANDWIDTH
 };
 
 /* Define Device Coding rate */
-enum eCODING_RATE
+typedef enum CODING_RATE
 {
     CODING_RATE_4_5 = 1u, /* DEFAULT */
     CODING_RATE_4_6 = 2u,
     CODING_RATE_4_7 = 3u,
     CODING_RATE_4_8 = 4u,
-};
+} LoRaCodingRateTypeDef_t;
 
 /* Define Device Header type */
-enum eHEADER_TYPE
+typedef enum HEADER_TYPE
 {
     EXPLICIT_HEADER = 0u, /* DEFAULT */
     IMPLICIT_HEADER = 1u,
-};
+} LoRaHeaderTypeDef_t;
 
 /* Define Device Spreding Factor */
-enum eSPREADING_FACTOR
+typedef enum SPREADING_FACTOR
 {
     SPREADING_FACTOR_6_64    = 6u,
     SPREADING_FACTOR_7_128   = 7u, /* DEFAULT */
@@ -206,10 +229,10 @@ enum eSPREADING_FACTOR
     SPREADING_FACTOR_10_1024 = 10u,
     SPREADING_FACTOR_11_2048 = 11u,
     SPREADING_FACTOR_12_4096 = 12u,
-};
+} LoRaSpredingFactorTypeDef_t;
 
 /* Define Device Mode */
-enum eWORKING_MODE
+typedef enum 
 {
     SLEEP_MODE        = 0u,           /* Sleep */
     STDBY_MODE        = 1u,           /* Standby */
@@ -219,33 +242,21 @@ enum eWORKING_MODE
     RXCONTINUOUS_MODE = 5u,           /* Receive continuous */
     RXSINGLE_MODE     = 6u,           /* Receive single */
     CAD_MODE          = 7u,           /* Channel activity detection */
-};
+    UNKNOWN,
+} LoRaWorkingMode_t;
 
 /* Define Device Receive Mode */
-enum eRX_MODE
-{
-    RX_SINGLE = 0u,
-    RX_CONTINUOUS = 1u,
-};
-
-/* Define Device Transmit Mode */
-enum eTX_MODE
-{
-    TX_SINGLE = 0u,
-    TX_CONTINOUS = 1u,
-};
-
-enum eCRC_MODE
+typedef enum CRC_MODE
 {
     CRC_ENABLE = 1u,
     CRC_DISABLE = 0u,
-};
+} LoRaCrcModeTypeDef_t;
 
-enum OSCILLATOR_SOURCE
+typedef enum OSCILLATOR_SOURCE
 {
     XTAL_INPUT = 0u,
     TCXO_INPUT = 1u,
-};
+} LoRaOsscSourceTypeDef_t;
 
 /* -------------------------------------------------------------------------- */
 /*                    Begin define registers of module Lora                   */
@@ -274,7 +285,7 @@ enum OSCILLATOR_SOURCE
 #define RegPll          0x70u   /* Control of the PLL bandwidth */
 
 /* ------------------------- Registers for LORA Mode ------------------------ */
-#if LORA_MODE   
+#if USE_LORA_MODE   
     #define RegFifoAddrPtr          0x0Du   /* FIFO SPI pointer */
     #define RegFifoTxBaseAddr       0x0Eu   /* Start Tx data */
     #define RegFifoRxBaseAddr       0x0Fu   /* Start Rx data */
@@ -409,8 +420,8 @@ void vIrqFlagsMaskInit(u8 ucIrqFlagsMask);
 u8 ucIrqFlagsRead(void);
 void vIrqFlagsClear(u8 ucIrqFlags);
 u8 ucFifoRxBytesNbRead(void);
-uint16_t usValidHeaderCntRead(void);
-uint16_t usValidPacketCntRead(void);
+u16 usValidHeaderCntRead(void);
+u16 usValidPacketCntRead(void);
 u8 ucRxCodingRateRead(void);
 u8 ucModemStatusRead(void);
 u16 ucPacketRssiRead(void);
@@ -424,8 +435,8 @@ void vImplicitHeaderModeOnInit(u8 ucHeaderMode);
 void vSpreadingFactorInit(u8 ucSpreadingFactor);
 void vTxContinuousModeInit(u8 ucTxContinuousMode);
 void vRxPayloadCrcOnInit(u8 ucRxPayloadCrcOn);
-void vSymbTimeoutInit(uint16_t ucSymbTimeout);
-void vPreambleLengthInit(uint16_t ucPreambleLength);
+void vSymbTimeoutInit(u16 ucSymbTimeout);
+void vPreambleLengthInit(u16 ucPreambleLength);
 void vPayloadLengthInit(u8 ucPayloadLength);
 void vPayloadMaxLengthInit(u8 ucPayloadMaxLength);
 void vFreqHoppingPeriodInit(u8 ucFreqHoppingPeriod);
@@ -457,14 +468,16 @@ void vAgcStep4Init(u8 ucAgcStep4);
 void vAgcStep5Init(u8 ucAgcStep5);
 void vPllBandwidth(u8 ucPllBandwidth);
 void vLoraInit(void);
-void vLoraTransmit(u8* pcTxBuffer, u8 ucTxMode);
-void vLoraReceive(u8* pcRxBuffer, u8 ucRxMode);
-void vLoRaConfigure(u8 bandwidth, u8 sf, u8 cr);
+void vLoraTransmit(u8 *pcTxBuffer, bool isRepeat);
+void vLoraReceive(u8 *pcRxBuffer, bool isRepeat);
 u16 usLoRaGetPreamble(void);
 u8 usLoRaGetBandwidth(void);
 u8 usLoRaGetCodingRate(void);
 u8 usLoRaGetHeaderMode(void);
 u8 usLoraGetSpreadingFactor(void);
+void LoRaTransmit(u8 *data, u8 size, u32 timeoutMs);
+void LoRaReceiveCont(u8 *outData, u8 size, u32 timeoutMs);
+
 /* -------------------------- End private functions ------------------------- */
 
 #endif /* !_LORA_H_ */

@@ -31,8 +31,8 @@ extern "C"
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 
-  /* Private includes ----------------------------------------------------------*/
-  /* USER CODE BEGIN Includes */
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 #include "stm_log.h"
 #include "misc.h"
 #include "stdbool.h"
@@ -44,12 +44,16 @@ extern "C"
   typedef uint32_t u32;
   typedef uint16_t u16;
   typedef uint8_t u8;
-
+  typedef void (*func_ptr)(void);
   typedef struct MainAppType
   {
     u16 adcLightSensor;
     bool isInit;
-  } MainAppTypeDef;
+    bool isRxDone;
+    u8 *pTxData;
+    u8 *pRxData;
+    u8 loraCurMode;
+  } MainAppTypeDef_t;
 
   /* USER CODE END ET */
 
@@ -79,17 +83,12 @@ extern "C"
 #define BUTTON_INPUT_GPIO_Port GPIOA
 #define INTERRUPT_LORA_Pin GPIO_PIN_3
 #define INTERRUPT_LORA_GPIO_Port GPIOA
+#define INTERRUPT_LORA_EXTI_IRQn EXTI3_IRQn
 #define SPI1_NSS_Pin GPIO_PIN_4
 #define SPI1_NSS_GPIO_Port GPIOA
 #define LED_OUTPUT_Pin GPIO_PIN_0
 #define LED_OUTPUT_GPIO_Port GPIOB
-
   /* USER CODE BEGIN Private defines */
-
-#define NODE1_ADDRESS 0x11u   /* Address node 1 */
-#define NODE2_ADDRESS 0x22u   /* Address node 2 */
-#define NODE3_ADDRESS 0x33u   /* Address node 3 */
-#define GATEWAY_ADDRESS 0x99u /* Adress Gateway */
 
 #define RELAY_ON 0xAAu
 #define RELAY_OFF 0xBBu
