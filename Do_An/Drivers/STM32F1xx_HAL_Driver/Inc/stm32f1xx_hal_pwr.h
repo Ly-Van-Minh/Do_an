@@ -131,7 +131,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup PWR_SLEEP_MODE_entry PWR SLEEP mode entry
+/** @defgroup PWR_SLEEP_mode_entry PWR SLEEP mode entry
   * @{
   */
 #define PWR_SLEEPENTRY_WFI              ((uint8_t)0x01)

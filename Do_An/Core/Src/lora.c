@@ -8,10 +8,17 @@
 #include "main.h"
 #include "string.h"
 #include "stm_log.h"
+#include "data-format.h"
+#include "light-sensor.h"
+
 
 /* Variables */
 extern MainAppTypeDef_t mInfo;
 extern SPI_HandleTypeDef hspi1;
+extern ADC_HandleTypeDef hadc1;
+
+extern u8 ucSendData[PAYLOAD_LENGTH];
+extern u8 ucReceivedData[PAYLOAD_LENGTH];
 
 /**
   * @brief Write Data Function To Lora Module
@@ -1221,7 +1228,7 @@ void vPllBandwidth(u8 ucPllBandwidth)
 void vLoraInit(void)
 {
 
-  STM_LOGD("MainInit", "LoRa modele init");
+  STM_LOGD("MainInit", "LoRa module init");
 
   vLongRangeModeInit(LORA_MODE); /*  Init Module Lora into Lora TM Mode */
   // LORA_GET_REGISTER(RegOpMode);
@@ -1280,7 +1287,7 @@ void vLoraInit(void)
   // // LORA_GET_REGISTER(RegSymbTimeoutLsb);
 
   // vPreambleLengthInit(PREAMBLE_LENGTH); /* ANCHOR Preamble length = PreambleLength + 4.25 Symbols */
-  vPreambleLengthInit(0x00FF);
+  vPreambleLengthInit(0x0080);
   // // LORA_GET_REGISTER(RegPreambleMsb);
   // // LORA_GET_REGISTER(RegPreambleLsb);
 
@@ -1672,7 +1679,11 @@ void LoRaTransmit(u8 *data, u8 size, u32 timeoutMs)
   }
   /* STANDBY MODE */
   LORA_GET_REGISTER(RegFifoRxCurrentAddr);
-  vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr) - PAYLOAD_LENGTH*2); /* Set FifoPtrAddr to FifoTxPtrBase */
+
+  // vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr) - PAYLOAD_LENGTH*2); /* Set FifoPtrAddr to FifoTxPtrBase */
+  vSpi1Write(RegFifoAddrPtr, FIFO_TX_BASE_ADDR);
+  
+
   /* WRITE DATA FIFO */
   for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
   {
@@ -1721,8 +1732,7 @@ void LoRaReceiveCont(u8 *outData, u8 size, u32 timeoutMs)
   /* WAIT FOR RX_DONE */
   if (timeoutMs == LORA_MAX_DELAY)
   {
-    while ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos == 0u)
-      ;
+    while ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos == 0u);
   }
   else
   {
@@ -1761,4 +1771,108 @@ void LoRaReceiveCont(u8 *outData, u8 size, u32 timeoutMs)
   /* CLEAR RX_DONE FLAG */
   vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
   // LORA_GET_REGISTER(RegIrqFlags);
+}
+
+void vNodeTransmitResponse(void)
+{
+  if((*(mInfo.pRxData + INDEX_DEST_ID) == THIS_NODE_ADDRESS) && \
+      (*(mInfo.pRxData + INDEX_MSG_TYPE) == MSG_TYPE_REQUEST))
+  {
+    STM_LOGV("Node", "Execute command from Gateway\r\n");
+    if(*(mInfo.pRxData + INDEX_DATA_RELAY_STATE) == RELAY_STATE_ON)
+    {
+      HAL_GPIO_WritePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin, GPIO_PIN_SET);
+    }
+    else
+    {
+      HAL_GPIO_WritePin(RELAY_OUTPUT_GPIO_Port, RELAY_OUTPUT_Pin, GPIO_PIN_RESET);
+    }
+
+    /* Start Adc */
+    HAL_ADC_Start_IT(&hadc1);
+    HAL_Delay(10);
+    if(*(mInfo.pRxData + INDEX_DATA_RELAY_STATE) == RELAY_STATE_ON)
+    {
+      if(IS_LIGHT_ON(mInfo.adcLightSensor) == true)
+      {
+        ucSendData[INDEX_DATA_RELAY_STATE] = RELAY_STATE_ON;
+        ucSendData[INDEX_DATA_ERR_CODE] = ERR_CODE_NONE;
+      }
+      else
+      {
+        ucSendData[INDEX_DATA_RELAY_STATE] = RELAY_STATE_OFF;                
+        ucSendData[INDEX_DATA_ERR_CODE] = ERR_CODE_LIGHT_ON_FAILED;
+        // ucSendData[INDEX_MSG_STATUS] = MSG_STS_FAILED;
+      }
+    }
+    else
+    {
+      if(IS_LIGHT_ON(mInfo.adcLightSensor) == true)
+      {
+        ucSendData[INDEX_DATA_RELAY_STATE] = RELAY_STATE_ON;
+        ucSendData[INDEX_DATA_ERR_CODE] = ERR_CODE_LIGHT_OFF_FAILED;
+        // ucSendData[INDEX_MSG_STATUS] = MSG_STS_FAILED;
+      }
+      else
+      {
+        ucSendData[INDEX_DATA_RELAY_STATE] = RELAY_STATE_OFF;                
+        ucSendData[INDEX_DATA_ERR_CODE] = ERR_CODE_NONE;
+      }
+    }
+    STM_LOGV("Node", "Send request to Gateway\r\n");
+
+    ucSendData[INDEX_SOURCE_ID] = THIS_NODE_ADDRESS;
+    ucSendData[INDEX_DEST_ID] = GATEWAY_ADDRESS;
+    ucSendData[INDEX_MSG_TYPE] = MSG_TYPE_RESPONSE;
+    ucSendData[INDEX_SEQUENCE_ID] = *(mInfo.pRxData + INDEX_SEQUENCE_ID);
+    ucSendData[INDEX_DATA_LOCATION] = LOCATION_NODE;
+    ucSendData[INDEX_DATA_TIME_ALIVE] = 0;
+    ucSendData[INDEX_UNDEFINED] = 0;
+    mInfo.pTxData = ucSendData;
+    LoRaTransmit(mInfo.pTxData , PAYLOAD_LENGTH, 5000);
+
+    /* Receiver */
+    vModeInit(STDBY_MODE);
+    vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+    vModeInit(RXCONTINUOUS_MODE);
+  }
+}
+
+void vGateWayTransmitRequest(u32 Timeout)
+{
+  u8 ucTransmitRepeat = 0;
+  do
+  {
+    if(ucTransmitRepeat <= 3)
+    {
+      printf("\r\n");
+      LoRaTransmit(mInfo.pTxData , PAYLOAD_LENGTH, 5000);
+
+      /* Change Lora into Receive continous mode */
+      vModeInit(STDBY_MODE);
+      vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+      vModeInit(RXCONTINUOUS_MODE);
+      ucTransmitRepeat++;
+      HAL_Delay(1000);
+    }
+    else
+    {
+      STM_LOGE("GateWay", "Node Address = %d not response", *(mInfo.pTxData + INDEX_DEST_ID));
+      break;
+    }
+  } while (!mInfo.isRxDone);
+}
+
+void vReceiveFifoData(void)
+{
+  vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr));
+  for (size_t i = 0u; i < ucSpi1Read(RegRxNbBytes); i++)
+  {
+    LORA_GET_REGISTER(RegFifoAddrPtr);
+    *(mInfo.pRxData + i) = ucSpi1Read(RegFifo);
+    STM_LOGV("Receive", "data receive[%d]: 0x%x", i, *(mInfo.pRxData + i));
+  }
+
+    /* CLEAR RX_DONE FLAG */
+  vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
 }

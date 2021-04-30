@@ -29,9 +29,10 @@
 /* USER CODE BEGIN Includes */
 #include "stm_log.h"
 #include "misc.h"
-#include "lora.h"
 #include "light-sensor.h"
+#include "lora.h"
 #include "data-format.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,7 +42,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SENDER
+
+#define GATEWAY   1
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,19 +55,34 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
 USART_CLI_HandleTypedef_t uartCliHandle;
 IWDG_HandleTypeDef hiwdg;
-extern u8 ucSendData[PAYLOAD_LENGTH];
-extern u8 ucReceivedData[PAYLOAD_LENGTH];
+u8 ucSendData[PAYLOAD_LENGTH] =
+    {
+        [INDEX_SOURCE_ID]         = GATEWAY_ADDRESS,
+        [INDEX_DEST_ID]           = NODE1_ADDRESS,
+        [INDEX_MSG_TYPE]          = MSG_TYPE_REQUEST,
+        [INDEX_MSG_STATUS]        = MSG_STS_NONE,
+        [INDEX_SEQUENCE_ID]       = 0,
+        [INDEX_DATA_LOCATION]     = LOCATION_GIAI_PHONG_1,
+        [INDEX_DATA_RELAY_STATE]  = RELAY_STATE_OFF,
+        [INDEX_DATA_ERR_CODE]     = ERR_CODE_NONE,
+        [INDEX_DATA_TIME_ALIVE]   = 0,
+        [INDEX_UNDEFINED]         = 0
+};
+u8 ucReceivedData[PAYLOAD_LENGTH] = {0};
+
 MainAppTypeDef_t mInfo = {
     .adcLightSensor = 0,
     .isRxDone = false,
     .isInit = false,
     .pTxData = ucSendData,
     .pRxData = ucReceivedData,
-    .loraCurMode = UNKNOWN,
+    .loraCurMode = UNKNOWN
 };
-
+bool isTransmit = false;
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,29 +136,52 @@ int main(void)
   LORA_GET_REGISTER(RegSyncWord);
   LORA_GET_REGISTER(RegPayloadLength);
 
-#ifndef SENDER
-  /* Receiver */
-  vModeInit(STDBY_MODE);
-  vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
-  vModeInit(RXCONTINUOUS_MODE);
-#endif /* !SENSOR */
+  #if GATEWAY
+
+  #else
+    /* Receiver */
+    vModeInit(STDBY_MODE);
+    vSpi1Write(RegFifoAddrPtr, FIFO_RX_BASE_ADDR);
+    vModeInit(RXCONTINUOUS_MODE);
+  #endif /* !GATEWAY */
+
   /* USER CODE END 2 */
 
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-// ADC_READ_LIGHTSENSOR();
-#ifdef SENDER
-    printf("\r\n");
-    LoRaTransmit(mInfo.pTxData , PAYLOAD_LENGTH, 5000);
-    HAL_Delay(1000);
-#else  /* !SENDER */
-    if (mInfo.isRxDone)
+
+    /* Transmit data and init Lora into receive continous mode */
+    #if GATEWAY
+      if(isTransmit == true)  /* Check Button: Pin PA2 */
+      {
+        isTransmit = false;
+        ucSendData[INDEX_SEQUENCE_ID] = GATEWAY_ADDRESS;
+        ucSendData[INDEX_DEST_ID] = THIS_NODE_ADDRESS;
+        ucSendData[INDEX_MSG_TYPE] = MSG_TYPE_REQUEST;
+        ucSendData[INDEX_MSG_STATUS] = MSG_STS_NONE;
+        ucSendData[INDEX_DATA_LOCATION] = LOCATION_GIAI_PHONG_1;
+        ucSendData[INDEX_DATA_RELAY_STATE] = RELAY_STATE_ON;
+        ucSendData[INDEX_DATA_ERR_CODE] = ERR_CODE_NONE;
+        ucSendData[INDEX_DATA_TIME_ALIVE] = 0;
+        ucSendData[INDEX_UNDEFINED] = 0;
+
+        vGateWayTransmitRequest(5000);
+        /* Increase Sequence ID*/
+        ucSendData[INDEX_SEQUENCE_ID]++;
+      }
+    #endif
+
+    /* Receive Data */
+    if (mInfo.isRxDone) /* Check data come from Sender */
     {
       mInfo.isRxDone = false;
       if ((ucSpi1Read(RegIrqFlags) & RX_DONE_Msk) >> RX_DONE_MskPos)
       {
         /* PAYLOAD_CRC CHECK */
+        LORA_GET_REGISTER(RegFifoRxCurrentAddr);  /* Check register */
+
         u8 temp = ucSpi1Read(RegIrqFlags);
         if ((temp & PAYLOAD_CRC_ERROR_Msk) >> PAYLOAD_CRC_ERROR_MskPos == 1)
         {
@@ -148,19 +189,20 @@ int main(void)
         }
         else
         {
-          vSpi1Write(RegFifoAddrPtr, ucSpi1Read(RegFifoRxCurrentAddr));
-          for (size_t i = 0u; i < PAYLOAD_LENGTH; i++)
-          {
-            LORA_GET_REGISTER(RegFifoAddrPtr);
-            *(mInfo.pRxData + i) = ucSpi1Read(RegFifo);
-            STM_LOGV("Transmit", "data receive[%d]: 0x%x", i, *(mInfo.pRxData + i));
-          }
+          vReceiveFifoData();
+
+          #if GATEWAY /* Gateway */
+            if(*(mInfo.pRxData + INDEX_DEST_ID) == GATEWAY_ADDRESS)
+            {
+              STM_LOGD("Gateway", "Receive request from Node\r\n");
+            }
+          #else /* Node */
+            vNodeTransmitResponse();
+          #endif
         }
       }
-      /* CLEAR RX_DONE FLAG */
-      vSpi1Write(RegIrqFlags, RX_DONE_Msk | PAYLOAD_CRC_ERROR_Msk);
     }
-#endif /* !SENDER */
+
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
@@ -182,7 +224,7 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -196,7 +238,8 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -242,7 +285,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef USE_FULL_ASSERT
+#ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

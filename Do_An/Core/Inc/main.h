@@ -24,8 +24,7 @@
 #define __MAIN_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -36,10 +35,10 @@ extern "C"
 #include "stm_log.h"
 #include "misc.h"
 #include "stdbool.h"
-  /* USER CODE END Includes */
+/* USER CODE END Includes */
 
-  /* Exported types ------------------------------------------------------------*/
-  /* USER CODE BEGIN ET */
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
 
   typedef uint32_t u32;
   typedef uint16_t u16;
@@ -55,22 +54,22 @@ extern "C"
     u8 loraCurMode;
   } MainAppTypeDef_t;
 
-  /* USER CODE END ET */
+/* USER CODE END ET */
 
-  /* Exported constants --------------------------------------------------------*/
-  /* USER CODE BEGIN EC */
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
 
-  /* USER CODE END EC */
+/* USER CODE END EC */
 
-  /* Exported macro ------------------------------------------------------------*/
-  /* USER CODE BEGIN EM */
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
 
-  /* USER CODE END EM */
+/* USER CODE END EM */
 
-  /* Exported functions prototypes ---------------------------------------------*/
-  void Error_Handler(void);
+/* Exported functions prototypes ---------------------------------------------*/
+void Error_Handler(void);
 
-  /* USER CODE BEGIN EFP */
+/* USER CODE BEGIN EFP */
   void _Error_Handler(char *file, int line);
 /* USER CODE END EFP */
 
@@ -81,6 +80,7 @@ extern "C"
 #define RELAY_OUTPUT_GPIO_Port GPIOA
 #define BUTTON_INPUT_Pin GPIO_PIN_2
 #define BUTTON_INPUT_GPIO_Port GPIOA
+#define BUTTON_INPUT_EXTI_IRQn EXTI2_IRQn
 #define INTERRUPT_LORA_Pin GPIO_PIN_3
 #define INTERRUPT_LORA_GPIO_Port GPIOA
 #define INTERRUPT_LORA_EXTI_IRQn EXTI3_IRQn
@@ -88,7 +88,7 @@ extern "C"
 #define SPI1_NSS_GPIO_Port GPIOA
 #define LED_OUTPUT_Pin GPIO_PIN_0
 #define LED_OUTPUT_GPIO_Port GPIOB
-  /* USER CODE BEGIN Private defines */
+/* USER CODE BEGIN Private defines */
 
 #define RELAY_ON 0xAAu
 #define RELAY_OFF 0xBBu
@@ -105,7 +105,7 @@ extern "C"
     }                                                              \
   } while (0)
 
-  /* USER CODE END Private defines */
+/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }

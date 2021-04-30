@@ -29,7 +29,8 @@ Core/Src/lora.o: ../Core/Src/lora.c ../Core/Inc/lora.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Core/Inc/misc.h ../Core/Inc/main.h ../Core/Inc/stm_log.h \
- ../Core/Inc/main.h ../Core/Inc/stm_log.h
+ ../Core/Inc/main.h ../Core/Inc/stm_log.h ../Core/Inc/data-format.h \
+ ../Core/Inc/lora.h ../Core/Inc/light-sensor.h
 
 ../Core/Inc/lora.h:
 
@@ -100,3 +101,9 @@ Core/Src/lora.o: ../Core/Src/lora.c ../Core/Inc/lora.h \
 ../Core/Inc/main.h:
 
 ../Core/Inc/stm_log.h:
+
+../Core/Inc/data-format.h:
+
+../Core/Inc/lora.h:
+
+../Core/Inc/light-sensor.h:

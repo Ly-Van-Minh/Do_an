@@ -477,6 +477,9 @@ u8 usLoRaGetHeaderMode(void);
 u8 usLoraGetSpreadingFactor(void);
 void LoRaTransmit(u8 *data, u8 size, u32 timeoutMs);
 void LoRaReceiveCont(u8 *outData, u8 size, u32 timeoutMs);
+void vNodeTransmitResponse(void);
+void vGateWayTransmitRequest(u32 Timeout);
+void vReceiveFifoData(void);
 
 /* -------------------------- End private functions ------------------------- */
 

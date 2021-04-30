@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "adc.h": "c",
+        "main.h": "c",
+        "light-sensor.h": "c",
+        "lora.h": "c"
+    }
+}

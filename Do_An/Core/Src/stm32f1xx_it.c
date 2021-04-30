@@ -26,6 +26,7 @@
 #include "stm_log.h"
 #include "usart.h"
 #include "lora.h"
+#include "light-sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,6 +66,7 @@ extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 extern MainAppTypeDef_t mInfo;
 extern USART_CLI_HandleTypedef_t uartCliHandle;
+extern bool isTransmit;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -210,6 +212,20 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles EXTI line2 interrupt.
+  */
+void EXTI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
+
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
+
+  /* USER CODE END EXTI2_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line3 interrupt.
   */
 void EXTI3_IRQHandler(void)
@@ -336,6 +352,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
     STM_LOGD("ISR", "INTERRUPT_LORA_Pin");
     mInfo.isRxDone = true;
+  }
+
+  if(GPIO_Pin == BUTTON_INPUT_Pin)
+  {
+    STM_LOGD("ISR", "BUTTON_INPUT_Pin");
+    isTransmit = true;
   }
 }
 
