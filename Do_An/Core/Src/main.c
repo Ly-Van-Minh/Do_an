@@ -112,7 +112,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   STM_LOGD("MainInit", "Reset cause: {%s}", resetCauseGetName(resetCauseGet()));
-  STM_LOGD("MainInit", "Watchdog Init {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
+  // STM_LOGD("MainInit", "Watchdog Init {%ums}", iwdgInit(&hiwdg, WATCHDOG_TIME));
   vLoraInit();
   STM_LOGD("MainInit", "------START APPLICATION------");
   LORA_GET_REGISTER(RegSyncWord);
